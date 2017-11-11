@@ -99,11 +99,6 @@ class GameHandler(RealtimeGameHandler):
         # self.canvas = Canvas()
         width_coefficient = self.canvas.width / self.world.width
         height_coefficient = self.canvas.height / self.world.height
-        # self.canvas.create_image("Background", 0, 0, scale_type=ScaleType.ScaleX,
-        #                          scale_value=int(self.canvas.width * 100 / gui_config["background_size"][0]),
-        #                          custom_ref='Background')
-        # self.canvas.edit_image("Background", scale_type=ScaleType.ScaleY,
-        #                        scale_value=int(self.canvas.height * 100 / gui_config["background_size"][1]))
 
         self.medics_ref = {}
         for side in self.world.medics:
@@ -147,7 +142,6 @@ class GameHandler(RealtimeGameHandler):
         self.delete_fire_ref = []
         self.create_fire_ref = []
         self.canvas.apply_actions()
-        print self.medics_ref
 
     def on_process_cycle(self):
         print('process: %s' % self.current_cycle)
@@ -207,7 +201,6 @@ class GameHandler(RealtimeGameHandler):
                 ref = self.power_ups_ref.pop((pup.position.x, pup.position.y))
                 self.canvas.delete_element(ref)
             else:  # create
-                print(pup.type)
                 if PowerUpType.LASER == pup.type:
                     img = "Laser"
                 else:
@@ -392,8 +385,6 @@ class GameHandler(RealtimeGameHandler):
         chance = random.randint(0, 100)
         if chance > 70 and len(self.power_ups) >= 2:
             chance = random.randint(0, len(self.power_ups) - 1)
-            print chance
-            print self.power_ups[chance]
             if self.power_ups[chance][2] == 0:
                 self.power_ups[chance][2] = 1
 
@@ -461,7 +452,6 @@ class GameHandler(RealtimeGameHandler):
                 laser_line_equation = self.get_line_formula_by_angle_and_point(x, y, angle)
                 wall_equation = self.walls_line_equation[i]
                 result.append(self.get_lines_meet_point(laser_line_equation, wall_equation))
-        print "fdfdfsfdsfsdfdsfsd", sorted(result)
         return sorted(result)[0] if result else self._get_fire_max_point(x, y, angle)
 
     def _get_fire_max_point(self, x1, y1, angle):

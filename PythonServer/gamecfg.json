@@ -30,7 +30,6 @@
 			"Flip": "images/Red.png",
           	"Flop": "images/Blue.png",
 			"Patient": "images/Patient.png",
-			"Background": "images/Background.png",
 			"Laser": "images/LaserGun.png",
 			"Healpack": "images/HealPack.png"
 		}
