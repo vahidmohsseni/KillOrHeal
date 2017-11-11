@@ -14,3 +14,4 @@ angle = float
 [Fire]
 _def = class
 id = int
+angle = float
