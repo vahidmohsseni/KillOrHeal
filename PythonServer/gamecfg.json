@@ -27,12 +27,18 @@
 		"width": 960,
 		"height": 960,
 		"images": {
+			"Flip": "images/Red.png",
+          	"Flop": "images/Blue.png",
+			"Patient": "images/Patient.png",
+			"Background": "images/Background.png",
+			"Laser": "images/LaserGun.png",
+			"Healpack": "images/HealPack.png"
 		}
 	},
 
 	"sides": {
-		"Blue": ["0"],
-		"Red": ["0"]
+		"Flip": ["0"],
+		"Flop": ["0"]
 	},
 
 	"game_handler": {
@@ -45,6 +51,9 @@
 		"max_team_commands": 1000,
 		"max_agent_commands": 1000,
 		"": "my configs",
-		"map": "maps/simple.cm"
+		"map": "maps/simple.cm",
+		"gui": {
+			"background_size": [300, 300]
+		}
 	}
 }

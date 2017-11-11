@@ -74,14 +74,14 @@ class PowerUp(object):
 		return 'PowerUp'
 
 
-	def __init__(self, type=None, position=None, apearance_time=None, value=None):
-		self.initialize(type, position, apearance_time, value)
+	def __init__(self, type=None, position=None, appearance_time=None, value=None):
+		self.initialize(type, position, appearance_time, value)
 	
 
-	def initialize(self, type=None, position=None, apearance_time=None, value=None):
+	def initialize(self, type=None, position=None, appearance_time=None, value=None):
 		self.type = type
 		self.position = position
-		self.apearance_time = apearance_time
+		self.appearance_time = appearance_time
 		self.value = value
 	
 
@@ -98,10 +98,10 @@ class PowerUp(object):
 		if self.position is not None:
 			s += self.position.serialize()
 		
-		# serialize self.apearance_time
-		s += b'\x00' if self.apearance_time is None else b'\x01'
-		if self.apearance_time is not None:
-			s += struct.pack('i', self.apearance_time)
+		# serialize self.appearance_time
+		s += b'\x00' if self.appearance_time is None else b'\x01'
+		if self.appearance_time is not None:
+			s += struct.pack('i', self.appearance_time)
 		
 		# serialize self.value
 		s += b'\x00' if self.value is None else b'\x01'
@@ -131,14 +131,14 @@ class PowerUp(object):
 		else:
 			self.position = None
 		
-		# deserialize self.apearance_time
+		# deserialize self.appearance_time
 		tmp5 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
 		if tmp5:
-			self.apearance_time = struct.unpack('i', s[offset:offset + 4])[0]
+			self.appearance_time = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
-			self.apearance_time = None
+			self.appearance_time = None
 		
 		# deserialize self.value
 		tmp6 = struct.unpack('B', s[offset:offset + 1])[0]
@@ -159,11 +159,11 @@ class Medic(object):
 		return 'Medic'
 
 
-	def __init__(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_range=None, laser_max_count=None, death_score=None):
-		self.initialize(id, side_name, position, radius, max_move_distance, angle, max_turn_angle, health, max_health, laser_count, laser_range, laser_max_count, death_score)
+	def __init__(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
+		self.initialize(id, side_name, position, radius, max_move_distance, angle, max_turn_angle, health, max_health, laser_count, laser_range, laser_max_count, healing_remaining_time, death_score)
 	
 
-	def initialize(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_range=None, laser_max_count=None, death_score=None):
+	def initialize(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
 		self.id = id
 		self.side_name = side_name
 		self.position = position
@@ -176,6 +176,7 @@ class Medic(object):
 		self.laser_count = laser_count
 		self.laser_range = laser_range
 		self.laser_max_count = laser_max_count
+		self.healing_remaining_time = healing_remaining_time
 		self.death_score = death_score
 	
 
@@ -248,6 +249,11 @@ class Medic(object):
 		s += b'\x00' if self.laser_max_count is None else b'\x01'
 		if self.laser_max_count is not None:
 			s += struct.pack('i', self.laser_max_count)
+		
+		# serialize self.healing_remaining_time
+		s += b'\x00' if self.healing_remaining_time is None else b'\x01'
+		if self.healing_remaining_time is not None:
+			s += struct.pack('i', self.healing_remaining_time)
 		
 		# serialize self.death_score
 		s += b'\x00' if self.death_score is None else b'\x01'
@@ -373,10 +379,19 @@ class Medic(object):
 		else:
 			self.laser_max_count = None
 		
-		# deserialize self.death_score
+		# deserialize self.healing_remaining_time
 		tmp23 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
 		if tmp23:
+			self.healing_remaining_time = struct.unpack('i', s[offset:offset + 4])[0]
+			offset += 4
+		else:
+			self.healing_remaining_time = None
+		
+		# deserialize self.death_score
+		tmp24 = struct.unpack('B', s[offset:offset + 1])[0]
+		offset += 1
+		if tmp24:
 			self.death_score = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
@@ -437,45 +452,45 @@ class Patient(object):
 
 	def deserialize(self, s, offset=0):
 		# deserialize self.position
-		tmp24 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp25 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp24:
+		if tmp25:
 			self.position = Position()
 			offset = self.position.deserialize(s, offset)
 		else:
 			self.position = None
 		
 		# deserialize self.radius
-		tmp25 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp26 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp25:
+		if tmp26:
 			self.radius = struct.unpack('f', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.radius = None
 		
 		# deserialize self.healing_duration
-		tmp26 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp27 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp26:
+		if tmp27:
 			self.healing_duration = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.healing_duration = None
 		
 		# deserialize self.capturable
-		tmp27 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp28 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp27:
+		if tmp28:
 			self.capturable = struct.unpack('?', s[offset:offset + 1])[0]
 			offset += 1
 		else:
 			self.capturable = None
 		
 		# deserialize self.heal_score
-		tmp28 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp29 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp28:
+		if tmp29:
 			self.heal_score = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
@@ -491,64 +506,49 @@ class Wall(object):
 		return 'Wall'
 
 
-	def __init__(self, position=None, angle=None, length=None):
-		self.initialize(position, angle, length)
+	def __init__(self, start_pos=None, end_pos=None):
+		self.initialize(start_pos, end_pos)
 	
 
-	def initialize(self, position=None, angle=None, length=None):
-		self.position = position
-		self.angle = angle
-		self.length = length
+	def initialize(self, start_pos=None, end_pos=None):
+		self.start_pos = start_pos
+		self.end_pos = end_pos
 	
 
 	def serialize(self):
 		s = b''
 		
-		# serialize self.position
-		s += b'\x00' if self.position is None else b'\x01'
-		if self.position is not None:
-			s += self.position.serialize()
+		# serialize self.start_pos
+		s += b'\x00' if self.start_pos is None else b'\x01'
+		if self.start_pos is not None:
+			s += self.start_pos.serialize()
 		
-		# serialize self.angle
-		s += b'\x00' if self.angle is None else b'\x01'
-		if self.angle is not None:
-			s += struct.pack('f', self.angle)
-		
-		# serialize self.length
-		s += b'\x00' if self.length is None else b'\x01'
-		if self.length is not None:
-			s += struct.pack('f', self.length)
+		# serialize self.end_pos
+		s += b'\x00' if self.end_pos is None else b'\x01'
+		if self.end_pos is not None:
+			s += self.end_pos.serialize()
 		
 		return s
 	
 
 	def deserialize(self, s, offset=0):
-		# deserialize self.position
-		tmp29 = struct.unpack('B', s[offset:offset + 1])[0]
-		offset += 1
-		if tmp29:
-			self.position = Position()
-			offset = self.position.deserialize(s, offset)
-		else:
-			self.position = None
-		
-		# deserialize self.angle
+		# deserialize self.start_pos
 		tmp30 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
 		if tmp30:
-			self.angle = struct.unpack('f', s[offset:offset + 4])[0]
-			offset += 4
+			self.start_pos = Position()
+			offset = self.start_pos.deserialize(s, offset)
 		else:
-			self.angle = None
+			self.start_pos = None
 		
-		# deserialize self.length
+		# deserialize self.end_pos
 		tmp31 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
 		if tmp31:
-			self.length = struct.unpack('f', s[offset:offset + 4])[0]
-			offset += 4
+			self.end_pos = Position()
+			offset = self.end_pos.deserialize(s, offset)
 		else:
-			self.length = None
+			self.end_pos = None
 		
 		return offset
 

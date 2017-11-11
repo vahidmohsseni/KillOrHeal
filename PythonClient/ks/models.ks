@@ -16,7 +16,7 @@ _def = enum<byte>
 _def = class
 type = PowerUpType
 position = Position
-apearance_time = int
+appearance_time = int
 value = int
 
 
@@ -34,6 +34,7 @@ max_health = int
 laser_count = int
 laser_range = float
 laser_max_count = int
+healing_remaining_time = int
 death_score = int
 
 
@@ -48,9 +49,9 @@ heal_score = int
 
 [Wall]
 _def = class
-position = Position
-angle = float
-length = float
+start_pos = Position
+end_pos = Position
+
 
 
 [World]
