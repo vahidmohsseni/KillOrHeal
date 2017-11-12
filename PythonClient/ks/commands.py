@@ -138,12 +138,13 @@ class Fire(object):
 		return 'Fire'
 
 
-	def __init__(self, id=None):
-		self.initialize(id)
+	def __init__(self, id=None, angle=None):
+		self.initialize(id, angle)
 	
 
-	def initialize(self, id=None):
+	def initialize(self, id=None, angle=None):
 		self.id = id
+		self.angle = angle
 	
 
 	def serialize(self):
@@ -153,6 +154,11 @@ class Fire(object):
 		s += b'\x00' if self.id is None else b'\x01'
 		if self.id is not None:
 			s += struct.pack('i', self.id)
+		
+		# serialize self.angle
+		s += b'\x00' if self.angle is None else b'\x01'
+		if self.angle is not None:
+			s += struct.pack('f', self.angle)
 		
 		return s
 	
@@ -166,5 +172,14 @@ class Fire(object):
 			offset += 4
 		else:
 			self.id = None
+		
+		# deserialize self.angle
+		tmp6 = struct.unpack('B', s[offset:offset + 1])[0]
+		offset += 1
+		if tmp6:
+			self.angle = struct.unpack('f', s[offset:offset + 4])[0]
+			offset += 4
+		else:
+			self.angle = None
 		
 		return offset

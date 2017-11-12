@@ -15,7 +15,13 @@
         "healing_remaining_time": 0,
         "laser_max_count": 3,
         "laser_range": 3,
-        "laser_count": 0
+        "laser_count": 0,
+        "laser_damage": 20
+    },
+
+    "": "HealPack max healing",
+    "healpack": {
+        "max_healing": 25
     },
 
     "":"patients",
@@ -43,14 +49,14 @@
 
     ],
     "": "powerups positions and types",
-    "powerups": { "positions": [{"x": 10.2, "y": 0.5, "type": 0},
-                                {"x": 19.2, "y": 10.1, "type": 1},
-                                {"x": 10.2, "y": 19.1, "type": 0},
-                                {"x": 0.2, "y": 10.7, "type": 0},
-                                {"x": 5.1, "y": 5.5, "type": 1},
-                                {"x": 15.2, "y": 5.5, "type": 0},
-                                {"x": 5.8, "y": 16.5, "type": 1},
-                                {"x": 16.0, "y": 16.1, "type": 0}],
+    "powerups": { "positions": [{"x": 10.2, "y": 0.5},
+                                {"x": 19.2, "y": 10.1},
+                                {"x": 10.2, "y": 19.1},
+                                {"x": 0.2, "y": 10.7},
+                                {"x": 5.1, "y": 5.5},
+                                {"x": 15.2, "y": 5.5},
+                                {"x": 5.8, "y": 16.5},
+                                {"x": 16.0, "y": 16.1}],
                   "appearance_time": 30}
 
 }

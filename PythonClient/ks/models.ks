@@ -32,6 +32,7 @@ max_turn_angle = float
 health = int
 max_health = int
 laser_count = int
+laser_damage = int
 laser_range = float
 laser_max_count = int
 healing_remaining_time = int

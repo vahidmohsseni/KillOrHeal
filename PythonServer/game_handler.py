@@ -12,13 +12,15 @@ from ks.commands import Move, Turn, Fire
 import json
 # math for draw walls
 import math
-from time import time
 
 
 class GameHandler(RealtimeGameHandler):
     def on_recv_command(self, side_name, agent_name, command_type, command):
         # print('command: %s %s %s' % (side_name, command_type, command))
-        self.commands[(side_name, command.id)] = ((side_name, command), time())
+        if command.name() == Fire().name():
+            self.commands[(side_name, command.id)] = ((side_name, command), 1)
+        else:
+            self.commands[(side_name, command.id)] = ((side_name, command), 2)
 
     def on_initialize(self):
         print('initialize')
@@ -88,7 +90,7 @@ class GameHandler(RealtimeGameHandler):
         self.power_ups = []
         self.world.powerups = []
         for powerup in self.world_map["powerups"]["positions"]:
-            self.power_ups.append([Position(powerup["x"], powerup["y"]), powerup["type"], 0])
+            self.power_ups.append([Position(powerup["x"], powerup["y"]), 0])
         # end set powerups
 
     def on_initialize_gui(self):
@@ -145,8 +147,14 @@ class GameHandler(RealtimeGameHandler):
 
     def on_process_cycle(self):
         print('process: %s' % self.current_cycle)
-        commands = [c[0] for c in sorted(self.commands.values(), key=lambda x: x[1])]
-        for side, command in commands:
+        fire_cmds = [c[0] for c in self.commands.values() if c[1] == 1]
+        other_cmds = [c[0] for c in self.commands.values() if c[1] == 2]
+        for side, command in fire_cmds:
+            for medic in self.world.medics[side]:
+                if medic.id == command.id:
+                    self._handle_command(side, medic, command)
+
+        for side, command in other_cmds:
             for medic in self.world.medics[side]:
                 if medic.id == command.id:
                     self._handle_command(side, medic, command)
@@ -247,6 +255,7 @@ class GameHandler(RealtimeGameHandler):
                      world_map["medics"]['max_turn_angle'],
                      world_map["medics"]['health'],
                      world_map["medics"]['max_health'],
+                     world_map["medics"]["laser_damage"],
                      world_map["medics"]["laser_count"],
                      world_map["medics"]["laser_range"],
                      world_map["medics"]["laser_max_count"],
@@ -385,11 +394,13 @@ class GameHandler(RealtimeGameHandler):
         chance = random.randint(0, 100)
         if chance > 70 and len(self.power_ups) >= 2:
             chance = random.randint(0, len(self.power_ups) - 1)
-            if self.power_ups[chance][2] == 0:
-                self.power_ups[chance][2] = 1
+            if self.power_ups[chance][1] == 0:
+                self.power_ups[chance][1] = 1
 
-                power_up_type = [(PowerUpType.LASER, 0), (PowerUpType.HEAL_PACK, 25)][self.power_ups[chance][1]]
-                pup = PowerUp(power_up_type[0], self.power_ups[chance][0], self.world_map["powerups"]["appearance_time"], power_up_type[1])
+                power_up_type = random.choice([(PowerUpType.LASER, 0),
+                                               (PowerUpType.HEAL_PACK, self.world_map["healpack"]["max_healing"])])
+                pup = PowerUp(power_up_type[0], self.power_ups[chance][0],
+                              self.world_map["powerups"]["appearance_time"], power_up_type[1])
                 self.world.powerups.append(pup)
                 self.modifying_power_ups.append([1, pup])
                 self.power_ups.remove(self.power_ups[chance])

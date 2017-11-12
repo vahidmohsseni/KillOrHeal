@@ -26,4 +26,4 @@ class AI(RealtimeAI):
                 Move(medic.id, 0.6),
                 Fire(medic.id)
             ]
-            self.send_command(random.choice(a))
+            self.send_command(random.choice(a[0:3]))
