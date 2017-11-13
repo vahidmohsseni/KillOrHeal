@@ -159,11 +159,11 @@ class Medic(object):
 		return 'Medic'
 
 
-	def __init__(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_damage=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
-		self.initialize(id, side_name, position, radius, max_move_distance, angle, max_turn_angle, health, max_health, laser_count, laser_damage, laser_range, laser_max_count, healing_remaining_time, death_score)
+	def __init__(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, max_fire_angle=None, health=None, max_health=None, laser_count=None, laser_damage=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
+		self.initialize(id, side_name, position, radius, max_move_distance, angle, max_turn_angle, max_fire_angle, health, max_health, laser_count, laser_damage, laser_range, laser_max_count, healing_remaining_time, death_score)
 	
 
-	def initialize(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, health=None, max_health=None, laser_count=None, laser_damage=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
+	def initialize(self, id=None, side_name=None, position=None, radius=None, max_move_distance=None, angle=None, max_turn_angle=None, max_fire_angle=None, health=None, max_health=None, laser_count=None, laser_damage=None, laser_range=None, laser_max_count=None, healing_remaining_time=None, death_score=None):
 		self.id = id
 		self.side_name = side_name
 		self.position = position
@@ -171,6 +171,7 @@ class Medic(object):
 		self.max_move_distance = max_move_distance
 		self.angle = angle
 		self.max_turn_angle = max_turn_angle
+		self.max_fire_angle = max_fire_angle
 		self.health = health
 		self.max_health = max_health
 		self.laser_count = laser_count
@@ -225,6 +226,11 @@ class Medic(object):
 		s += b'\x00' if self.max_turn_angle is None else b'\x01'
 		if self.max_turn_angle is not None:
 			s += struct.pack('f', self.max_turn_angle)
+		
+		# serialize self.max_fire_angle
+		s += b'\x00' if self.max_fire_angle is None else b'\x01'
+		if self.max_fire_angle is not None:
+			s += struct.pack('f', self.max_fire_angle)
 		
 		# serialize self.health
 		s += b'\x00' if self.health is None else b'\x01'
@@ -340,73 +346,82 @@ class Medic(object):
 		else:
 			self.max_turn_angle = None
 		
-		# deserialize self.health
+		# deserialize self.max_fire_angle
 		tmp18 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
 		if tmp18:
+			self.max_fire_angle = struct.unpack('f', s[offset:offset + 4])[0]
+			offset += 4
+		else:
+			self.max_fire_angle = None
+		
+		# deserialize self.health
+		tmp19 = struct.unpack('B', s[offset:offset + 1])[0]
+		offset += 1
+		if tmp19:
 			self.health = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.health = None
 		
 		# deserialize self.max_health
-		tmp19 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp20 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp19:
+		if tmp20:
 			self.max_health = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.max_health = None
 		
 		# deserialize self.laser_count
-		tmp20 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp21 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp20:
+		if tmp21:
 			self.laser_count = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.laser_count = None
 		
 		# deserialize self.laser_damage
-		tmp21 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp22 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp21:
+		if tmp22:
 			self.laser_damage = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.laser_damage = None
 		
 		# deserialize self.laser_range
-		tmp22 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp23 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp22:
+		if tmp23:
 			self.laser_range = struct.unpack('f', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.laser_range = None
 		
 		# deserialize self.laser_max_count
-		tmp23 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp24 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp23:
+		if tmp24:
 			self.laser_max_count = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.laser_max_count = None
 		
 		# deserialize self.healing_remaining_time
-		tmp24 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp25 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp24:
+		if tmp25:
 			self.healing_remaining_time = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.healing_remaining_time = None
 		
 		# deserialize self.death_score
-		tmp25 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp26 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp25:
+		if tmp26:
 			self.death_score = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
@@ -467,45 +482,45 @@ class Patient(object):
 
 	def deserialize(self, s, offset=0):
 		# deserialize self.position
-		tmp26 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp27 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp26:
+		if tmp27:
 			self.position = Position()
 			offset = self.position.deserialize(s, offset)
 		else:
 			self.position = None
 		
 		# deserialize self.radius
-		tmp27 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp28 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp27:
+		if tmp28:
 			self.radius = struct.unpack('f', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.radius = None
 		
 		# deserialize self.healing_duration
-		tmp28 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp29 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp28:
+		if tmp29:
 			self.healing_duration = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.healing_duration = None
 		
 		# deserialize self.capturable
-		tmp29 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp30 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp29:
+		if tmp30:
 			self.capturable = struct.unpack('?', s[offset:offset + 1])[0]
 			offset += 1
 		else:
 			self.capturable = None
 		
 		# deserialize self.heal_score
-		tmp30 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp31 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp30:
+		if tmp31:
 			self.heal_score = struct.unpack('i', s[offset:offset + 4])[0]
 			offset += 4
 		else:
@@ -548,18 +563,18 @@ class Wall(object):
 
 	def deserialize(self, s, offset=0):
 		# deserialize self.start_pos
-		tmp31 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp32 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp31:
+		if tmp32:
 			self.start_pos = Position()
 			offset = self.start_pos.deserialize(s, offset)
 		else:
 			self.start_pos = None
 		
 		# deserialize self.end_pos
-		tmp32 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp33 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp32:
+		if tmp33:
 			self.end_pos = Position()
 			offset = self.end_pos.deserialize(s, offset)
 		else:
@@ -605,290 +620,290 @@ class World(object):
 		# serialize self.scores
 		s += b'\x00' if self.scores is None else b'\x01'
 		if self.scores is not None:
-			tmp33 = b''
-			tmp33 += struct.pack('I', len(self.scores))
-			while len(tmp33) and tmp33[-1] == b'\x00'[0]:
-				tmp33 = tmp33[:-1]
-			s += struct.pack('B', len(tmp33))
-			s += tmp33
+			tmp34 = b''
+			tmp34 += struct.pack('I', len(self.scores))
+			while len(tmp34) and tmp34[-1] == b'\x00'[0]:
+				tmp34 = tmp34[:-1]
+			s += struct.pack('B', len(tmp34))
+			s += tmp34
 			
-			for tmp34 in self.scores:
-				s += b'\x00' if tmp34 is None else b'\x01'
-				if tmp34 is not None:
-					tmp35 = b''
-					tmp35 += struct.pack('I', len(tmp34))
-					while len(tmp35) and tmp35[-1] == b'\x00'[0]:
-						tmp35 = tmp35[:-1]
-					s += struct.pack('B', len(tmp35))
-					s += tmp35
+			for tmp35 in self.scores:
+				s += b'\x00' if tmp35 is None else b'\x01'
+				if tmp35 is not None:
+					tmp36 = b''
+					tmp36 += struct.pack('I', len(tmp35))
+					while len(tmp36) and tmp36[-1] == b'\x00'[0]:
+						tmp36 = tmp36[:-1]
+					s += struct.pack('B', len(tmp36))
+					s += tmp36
 					
-					s += tmp34.encode('ISO-8859-1') if PY3 else tmp34
-				s += b'\x00' if self.scores[tmp34] is None else b'\x01'
-				if self.scores[tmp34] is not None:
-					s += struct.pack('i', self.scores[tmp34])
+					s += tmp35.encode('ISO-8859-1') if PY3 else tmp35
+				s += b'\x00' if self.scores[tmp35] is None else b'\x01'
+				if self.scores[tmp35] is not None:
+					s += struct.pack('i', self.scores[tmp35])
 		
 		# serialize self.medics
 		s += b'\x00' if self.medics is None else b'\x01'
 		if self.medics is not None:
-			tmp36 = b''
-			tmp36 += struct.pack('I', len(self.medics))
-			while len(tmp36) and tmp36[-1] == b'\x00'[0]:
-				tmp36 = tmp36[:-1]
-			s += struct.pack('B', len(tmp36))
-			s += tmp36
+			tmp37 = b''
+			tmp37 += struct.pack('I', len(self.medics))
+			while len(tmp37) and tmp37[-1] == b'\x00'[0]:
+				tmp37 = tmp37[:-1]
+			s += struct.pack('B', len(tmp37))
+			s += tmp37
 			
-			for tmp37 in self.medics:
-				s += b'\x00' if tmp37 is None else b'\x01'
-				if tmp37 is not None:
-					tmp38 = b''
-					tmp38 += struct.pack('I', len(tmp37))
-					while len(tmp38) and tmp38[-1] == b'\x00'[0]:
-						tmp38 = tmp38[:-1]
-					s += struct.pack('B', len(tmp38))
-					s += tmp38
-					
-					s += tmp37.encode('ISO-8859-1') if PY3 else tmp37
-				s += b'\x00' if self.medics[tmp37] is None else b'\x01'
-				if self.medics[tmp37] is not None:
+			for tmp38 in self.medics:
+				s += b'\x00' if tmp38 is None else b'\x01'
+				if tmp38 is not None:
 					tmp39 = b''
-					tmp39 += struct.pack('I', len(self.medics[tmp37]))
+					tmp39 += struct.pack('I', len(tmp38))
 					while len(tmp39) and tmp39[-1] == b'\x00'[0]:
 						tmp39 = tmp39[:-1]
 					s += struct.pack('B', len(tmp39))
 					s += tmp39
 					
-					for tmp40 in self.medics[tmp37]:
-						s += b'\x00' if tmp40 is None else b'\x01'
-						if tmp40 is not None:
-							s += tmp40.serialize()
+					s += tmp38.encode('ISO-8859-1') if PY3 else tmp38
+				s += b'\x00' if self.medics[tmp38] is None else b'\x01'
+				if self.medics[tmp38] is not None:
+					tmp40 = b''
+					tmp40 += struct.pack('I', len(self.medics[tmp38]))
+					while len(tmp40) and tmp40[-1] == b'\x00'[0]:
+						tmp40 = tmp40[:-1]
+					s += struct.pack('B', len(tmp40))
+					s += tmp40
+					
+					for tmp41 in self.medics[tmp38]:
+						s += b'\x00' if tmp41 is None else b'\x01'
+						if tmp41 is not None:
+							s += tmp41.serialize()
 		
 		# serialize self.walls
 		s += b'\x00' if self.walls is None else b'\x01'
 		if self.walls is not None:
-			tmp41 = b''
-			tmp41 += struct.pack('I', len(self.walls))
-			while len(tmp41) and tmp41[-1] == b'\x00'[0]:
-				tmp41 = tmp41[:-1]
-			s += struct.pack('B', len(tmp41))
-			s += tmp41
+			tmp42 = b''
+			tmp42 += struct.pack('I', len(self.walls))
+			while len(tmp42) and tmp42[-1] == b'\x00'[0]:
+				tmp42 = tmp42[:-1]
+			s += struct.pack('B', len(tmp42))
+			s += tmp42
 			
-			for tmp42 in self.walls:
-				s += b'\x00' if tmp42 is None else b'\x01'
-				if tmp42 is not None:
-					s += tmp42.serialize()
+			for tmp43 in self.walls:
+				s += b'\x00' if tmp43 is None else b'\x01'
+				if tmp43 is not None:
+					s += tmp43.serialize()
 		
 		# serialize self.patients
 		s += b'\x00' if self.patients is None else b'\x01'
 		if self.patients is not None:
-			tmp43 = b''
-			tmp43 += struct.pack('I', len(self.patients))
-			while len(tmp43) and tmp43[-1] == b'\x00'[0]:
-				tmp43 = tmp43[:-1]
-			s += struct.pack('B', len(tmp43))
-			s += tmp43
+			tmp44 = b''
+			tmp44 += struct.pack('I', len(self.patients))
+			while len(tmp44) and tmp44[-1] == b'\x00'[0]:
+				tmp44 = tmp44[:-1]
+			s += struct.pack('B', len(tmp44))
+			s += tmp44
 			
-			for tmp44 in self.patients:
-				s += b'\x00' if tmp44 is None else b'\x01'
-				if tmp44 is not None:
-					s += tmp44.serialize()
+			for tmp45 in self.patients:
+				s += b'\x00' if tmp45 is None else b'\x01'
+				if tmp45 is not None:
+					s += tmp45.serialize()
 		
 		# serialize self.powerups
 		s += b'\x00' if self.powerups is None else b'\x01'
 		if self.powerups is not None:
-			tmp45 = b''
-			tmp45 += struct.pack('I', len(self.powerups))
-			while len(tmp45) and tmp45[-1] == b'\x00'[0]:
-				tmp45 = tmp45[:-1]
-			s += struct.pack('B', len(tmp45))
-			s += tmp45
+			tmp46 = b''
+			tmp46 += struct.pack('I', len(self.powerups))
+			while len(tmp46) and tmp46[-1] == b'\x00'[0]:
+				tmp46 = tmp46[:-1]
+			s += struct.pack('B', len(tmp46))
+			s += tmp46
 			
-			for tmp46 in self.powerups:
-				s += b'\x00' if tmp46 is None else b'\x01'
-				if tmp46 is not None:
-					s += tmp46.serialize()
+			for tmp47 in self.powerups:
+				s += b'\x00' if tmp47 is None else b'\x01'
+				if tmp47 is not None:
+					s += tmp47.serialize()
 		
 		return s
 	
 
 	def deserialize(self, s, offset=0):
 		# deserialize self.width
-		tmp47 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp48 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp47:
+		if tmp48:
 			self.width = struct.unpack('f', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.width = None
 		
 		# deserialize self.height
-		tmp48 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp49 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp48:
+		if tmp49:
 			self.height = struct.unpack('f', s[offset:offset + 4])[0]
 			offset += 4
 		else:
 			self.height = None
 		
 		# deserialize self.scores
-		tmp49 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp50 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp49:
-			tmp50 = struct.unpack('B', s[offset:offset + 1])[0]
+		if tmp50:
+			tmp51 = struct.unpack('B', s[offset:offset + 1])[0]
 			offset += 1
-			tmp51 = s[offset:offset + tmp50]
-			offset += tmp50
-			tmp51 += b'\x00' * (4 - tmp50)
-			tmp52 = struct.unpack('I', tmp51)[0]
+			tmp52 = s[offset:offset + tmp51]
+			offset += tmp51
+			tmp52 += b'\x00' * (4 - tmp51)
+			tmp53 = struct.unpack('I', tmp52)[0]
 			
 			self.scores = {}
-			for tmp53 in range(tmp52):
-				tmp56 = struct.unpack('B', s[offset:offset + 1])[0]
+			for tmp54 in range(tmp53):
+				tmp57 = struct.unpack('B', s[offset:offset + 1])[0]
 				offset += 1
-				if tmp56:
-					tmp57 = struct.unpack('B', s[offset:offset + 1])[0]
+				if tmp57:
+					tmp58 = struct.unpack('B', s[offset:offset + 1])[0]
 					offset += 1
-					tmp58 = s[offset:offset + tmp57]
-					offset += tmp57
-					tmp58 += b'\x00' * (4 - tmp57)
-					tmp59 = struct.unpack('I', tmp58)[0]
+					tmp59 = s[offset:offset + tmp58]
+					offset += tmp58
+					tmp59 += b'\x00' * (4 - tmp58)
+					tmp60 = struct.unpack('I', tmp59)[0]
 					
-					tmp54 = s[offset:offset + tmp59].decode('ISO-8859-1') if PY3 else s[offset:offset + tmp59]
-					offset += tmp59
-				else:
-					tmp54 = None
-				tmp60 = struct.unpack('B', s[offset:offset + 1])[0]
-				offset += 1
-				if tmp60:
-					tmp55 = struct.unpack('i', s[offset:offset + 4])[0]
-					offset += 4
+					tmp55 = s[offset:offset + tmp60].decode('ISO-8859-1') if PY3 else s[offset:offset + tmp60]
+					offset += tmp60
 				else:
 					tmp55 = None
-				self.scores[tmp54] = tmp55
+				tmp61 = struct.unpack('B', s[offset:offset + 1])[0]
+				offset += 1
+				if tmp61:
+					tmp56 = struct.unpack('i', s[offset:offset + 4])[0]
+					offset += 4
+				else:
+					tmp56 = None
+				self.scores[tmp55] = tmp56
 		else:
 			self.scores = None
 		
 		# deserialize self.medics
-		tmp61 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp62 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp61:
-			tmp62 = struct.unpack('B', s[offset:offset + 1])[0]
+		if tmp62:
+			tmp63 = struct.unpack('B', s[offset:offset + 1])[0]
 			offset += 1
-			tmp63 = s[offset:offset + tmp62]
-			offset += tmp62
-			tmp63 += b'\x00' * (4 - tmp62)
-			tmp64 = struct.unpack('I', tmp63)[0]
+			tmp64 = s[offset:offset + tmp63]
+			offset += tmp63
+			tmp64 += b'\x00' * (4 - tmp63)
+			tmp65 = struct.unpack('I', tmp64)[0]
 			
 			self.medics = {}
-			for tmp65 in range(tmp64):
-				tmp68 = struct.unpack('B', s[offset:offset + 1])[0]
+			for tmp66 in range(tmp65):
+				tmp69 = struct.unpack('B', s[offset:offset + 1])[0]
 				offset += 1
-				if tmp68:
-					tmp69 = struct.unpack('B', s[offset:offset + 1])[0]
+				if tmp69:
+					tmp70 = struct.unpack('B', s[offset:offset + 1])[0]
 					offset += 1
-					tmp70 = s[offset:offset + tmp69]
-					offset += tmp69
-					tmp70 += b'\x00' * (4 - tmp69)
-					tmp71 = struct.unpack('I', tmp70)[0]
+					tmp71 = s[offset:offset + tmp70]
+					offset += tmp70
+					tmp71 += b'\x00' * (4 - tmp70)
+					tmp72 = struct.unpack('I', tmp71)[0]
 					
-					tmp66 = s[offset:offset + tmp71].decode('ISO-8859-1') if PY3 else s[offset:offset + tmp71]
-					offset += tmp71
-				else:
-					tmp66 = None
-				tmp72 = struct.unpack('B', s[offset:offset + 1])[0]
-				offset += 1
-				if tmp72:
-					tmp73 = struct.unpack('B', s[offset:offset + 1])[0]
-					offset += 1
-					tmp74 = s[offset:offset + tmp73]
-					offset += tmp73
-					tmp74 += b'\x00' * (4 - tmp73)
-					tmp75 = struct.unpack('I', tmp74)[0]
-					
-					tmp67 = []
-					for tmp76 in range(tmp75):
-						tmp78 = struct.unpack('B', s[offset:offset + 1])[0]
-						offset += 1
-						if tmp78:
-							tmp77 = Medic()
-							offset = tmp77.deserialize(s, offset)
-						else:
-							tmp77 = None
-						tmp67.append(tmp77)
+					tmp67 = s[offset:offset + tmp72].decode('ISO-8859-1') if PY3 else s[offset:offset + tmp72]
+					offset += tmp72
 				else:
 					tmp67 = None
-				self.medics[tmp66] = tmp67
+				tmp73 = struct.unpack('B', s[offset:offset + 1])[0]
+				offset += 1
+				if tmp73:
+					tmp74 = struct.unpack('B', s[offset:offset + 1])[0]
+					offset += 1
+					tmp75 = s[offset:offset + tmp74]
+					offset += tmp74
+					tmp75 += b'\x00' * (4 - tmp74)
+					tmp76 = struct.unpack('I', tmp75)[0]
+					
+					tmp68 = []
+					for tmp77 in range(tmp76):
+						tmp79 = struct.unpack('B', s[offset:offset + 1])[0]
+						offset += 1
+						if tmp79:
+							tmp78 = Medic()
+							offset = tmp78.deserialize(s, offset)
+						else:
+							tmp78 = None
+						tmp68.append(tmp78)
+				else:
+					tmp68 = None
+				self.medics[tmp67] = tmp68
 		else:
 			self.medics = None
 		
 		# deserialize self.walls
-		tmp79 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp80 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp79:
-			tmp80 = struct.unpack('B', s[offset:offset + 1])[0]
+		if tmp80:
+			tmp81 = struct.unpack('B', s[offset:offset + 1])[0]
 			offset += 1
-			tmp81 = s[offset:offset + tmp80]
-			offset += tmp80
-			tmp81 += b'\x00' * (4 - tmp80)
-			tmp82 = struct.unpack('I', tmp81)[0]
+			tmp82 = s[offset:offset + tmp81]
+			offset += tmp81
+			tmp82 += b'\x00' * (4 - tmp81)
+			tmp83 = struct.unpack('I', tmp82)[0]
 			
 			self.walls = []
-			for tmp83 in range(tmp82):
-				tmp85 = struct.unpack('B', s[offset:offset + 1])[0]
+			for tmp84 in range(tmp83):
+				tmp86 = struct.unpack('B', s[offset:offset + 1])[0]
 				offset += 1
-				if tmp85:
-					tmp84 = Wall()
-					offset = tmp84.deserialize(s, offset)
+				if tmp86:
+					tmp85 = Wall()
+					offset = tmp85.deserialize(s, offset)
 				else:
-					tmp84 = None
-				self.walls.append(tmp84)
+					tmp85 = None
+				self.walls.append(tmp85)
 		else:
 			self.walls = None
 		
 		# deserialize self.patients
-		tmp86 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp87 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp86:
-			tmp87 = struct.unpack('B', s[offset:offset + 1])[0]
+		if tmp87:
+			tmp88 = struct.unpack('B', s[offset:offset + 1])[0]
 			offset += 1
-			tmp88 = s[offset:offset + tmp87]
-			offset += tmp87
-			tmp88 += b'\x00' * (4 - tmp87)
-			tmp89 = struct.unpack('I', tmp88)[0]
+			tmp89 = s[offset:offset + tmp88]
+			offset += tmp88
+			tmp89 += b'\x00' * (4 - tmp88)
+			tmp90 = struct.unpack('I', tmp89)[0]
 			
 			self.patients = []
-			for tmp90 in range(tmp89):
-				tmp92 = struct.unpack('B', s[offset:offset + 1])[0]
+			for tmp91 in range(tmp90):
+				tmp93 = struct.unpack('B', s[offset:offset + 1])[0]
 				offset += 1
-				if tmp92:
-					tmp91 = Patient()
-					offset = tmp91.deserialize(s, offset)
+				if tmp93:
+					tmp92 = Patient()
+					offset = tmp92.deserialize(s, offset)
 				else:
-					tmp91 = None
-				self.patients.append(tmp91)
+					tmp92 = None
+				self.patients.append(tmp92)
 		else:
 			self.patients = None
 		
 		# deserialize self.powerups
-		tmp93 = struct.unpack('B', s[offset:offset + 1])[0]
+		tmp94 = struct.unpack('B', s[offset:offset + 1])[0]
 		offset += 1
-		if tmp93:
-			tmp94 = struct.unpack('B', s[offset:offset + 1])[0]
+		if tmp94:
+			tmp95 = struct.unpack('B', s[offset:offset + 1])[0]
 			offset += 1
-			tmp95 = s[offset:offset + tmp94]
-			offset += tmp94
-			tmp95 += b'\x00' * (4 - tmp94)
-			tmp96 = struct.unpack('I', tmp95)[0]
+			tmp96 = s[offset:offset + tmp95]
+			offset += tmp95
+			tmp96 += b'\x00' * (4 - tmp95)
+			tmp97 = struct.unpack('I', tmp96)[0]
 			
 			self.powerups = []
-			for tmp97 in range(tmp96):
-				tmp99 = struct.unpack('B', s[offset:offset + 1])[0]
+			for tmp98 in range(tmp97):
+				tmp100 = struct.unpack('B', s[offset:offset + 1])[0]
 				offset += 1
-				if tmp99:
-					tmp98 = PowerUp()
-					offset = tmp98.deserialize(s, offset)
+				if tmp100:
+					tmp99 = PowerUp()
+					offset = tmp99.deserialize(s, offset)
 				else:
-					tmp98 = None
-				self.powerups.append(tmp98)
+					tmp99 = None
+				self.powerups.append(tmp99)
 		else:
 			self.powerups = None
 		

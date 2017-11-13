@@ -29,6 +29,7 @@ radius = float
 max_move_distance = float
 angle = float
 max_turn_angle = float
+max_fire_angle = float
 health = int
 max_health = int
 laser_count = int
