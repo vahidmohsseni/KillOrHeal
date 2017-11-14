@@ -253,6 +253,7 @@ class GameHandler(RealtimeGameHandler):
                      world_map["medics"]['max_move_distance'],
                      angle,
                      world_map["medics"]['max_turn_angle'],
+                     world_map["medics"]["max_fire_angle"],
                      world_map["medics"]['health'],
                      world_map["medics"]['max_health'],
                      world_map["medics"]["laser_damage"],

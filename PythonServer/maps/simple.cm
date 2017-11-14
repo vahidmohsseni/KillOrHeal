@@ -11,6 +11,7 @@
         "health": 100,
         "max_health": 100,
         "max_turn_angle": 30,
+        "max_fire_angle": 10,
         "max_move_distance": 0.99,
         "healing_remaining_time": 0,
         "laser_max_count": 3,
