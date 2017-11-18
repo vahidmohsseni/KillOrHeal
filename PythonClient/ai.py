@@ -24,6 +24,6 @@ class AI(RealtimeAI):
             a = [
                 Turn(medic.id, random.choice([True, False]), random.uniform(0, 30)),
                 Move(medic.id, 0.6),
-                Fire(medic.id)
+                Fire(medic.id, 10)
             ]
             self.send_command(random.choice(a[0:3]))

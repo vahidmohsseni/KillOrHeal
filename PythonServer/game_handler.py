@@ -93,6 +93,9 @@ class GameHandler(RealtimeGameHandler):
             self.power_ups.append([Position(powerup["x"], powerup["y"]), 0])
         # end set powerups
 
+        # list for medics should be deleted after laser
+        self.down_medics = []
+
     def on_initialize_gui(self):
         print('initialize gui')
         self.gui_config = gui_config = self.config["gui"]
@@ -143,6 +146,8 @@ class GameHandler(RealtimeGameHandler):
 
         self.delete_fire_ref = []
         self.create_fire_ref = []
+
+        self.down_medics_ref = []
         self.canvas.apply_actions()
 
     def on_process_cycle(self):
@@ -153,7 +158,10 @@ class GameHandler(RealtimeGameHandler):
             for medic in self.world.medics[side]:
                 if medic.id == command.id:
                     self._handle_command(side, medic, command)
-
+        # should damaged medics be removed
+        for medic in self.down_medics:
+            self.world.medics[medic.side_name].remove(medic)
+        self.down_medics = []
         for side, command in other_cmds:
             for medic in self.world.medics[side]:
                 if medic.id == command.id:
@@ -180,7 +188,7 @@ class GameHandler(RealtimeGameHandler):
                 x = medic.position.x * width_coefficient
                 y = medic.position.y * height_coefficient
                 tmp = self.medics_ref.get((side, medic.id), None)
-                if  tmp >= 0:
+                if tmp >= 0:
                     self.canvas.edit_image(self.medics_ref[side, medic.id], x, y, angle=medic.angle)
                 else:
                     continue
@@ -238,6 +246,13 @@ class GameHandler(RealtimeGameHandler):
             self.delete_fire_ref.append(ref)
         self.create_fire_ref = []
         # end draw fire and remove
+
+        # delete medics whose health is 0
+        for medic in self.down_medics_ref:
+            for ref in self.medics_ref[medic.side_name]:
+                self.canvas.delete_element(ref)
+        self.down_medics_ref = []
+        # end delete medics whose health is 0
         self.canvas.apply_actions()
 
     @staticmethod
@@ -384,12 +399,23 @@ class GameHandler(RealtimeGameHandler):
                 medic.angle %= 360
 
     def _handle_fire(self, side, medic, cmd):
-        medic.healing_remaining_time = 0
-        if medic.laser_count != 0:
-            medic.laser_count -= 1
-            x2, y2 = self.check_fire_crush_the_wall_and_other_medic(medic.position.x, medic.position.y, medic.angle)
-            x1, y1 = medic.position.x, medic.position.y
-            self.create_fire_ref.append([x2, y2, x1, y1])
+        angle = cmd.angle
+        if abs(angle) <= self.world_map["medics"]["max_fire_angle"]:
+            angle += medic.angle
+            if medic.laser_count != 0:
+                medic.healing_remaining_time = 0
+                medic.laser_count -= 1
+                x2, y2, line_eq = self.check_fire_crush_the_wall(medic.position.x, medic.position.y, angle)
+                x1, y1 = medic.position.x, medic.position.y
+
+                x2, y2, o_medic = self.check_fire_crush_the_medics(x1, y1, x2, y2, line_eq, medic)
+
+                if o_medic:
+                    o_medic.health -= medic.laser_damage
+                    if o_medic.health <= 0:
+                        self.down_medics.append(o_medic)
+                        self.down_medics_ref.append(o_medic)
+                self.create_fire_ref.append([x2, y2, x1, y1])
 
     def _create_power_ups_randomly(self):
         chance = random.randint(0, 100)
@@ -453,18 +479,49 @@ class GameHandler(RealtimeGameHandler):
         for i in result:
             self.world.powerups.pop(i)
 
-    def check_fire_crush_the_wall_and_other_medic(self, x, y, angle):
+    def check_fire_crush_the_wall(self, x, y, angle):
         # consider 3 lines equation
         result = []
+        x_max = x + self.world_map["medics"]["laser_range"] * math.cos(math.radians(angle))
+        y_max = y - self.world_map["medics"]["laser_range"] * math.sin(math.radians(angle))
+        fire_line_eq = ((y - y_max), (x_max - x), ((y * (x - x_max)) + (x * (y_max - y))))
         for i in range(len(self.world.walls)):
             wall = self.world.walls[i]
-            angle_line1 = self.get_line_degree_with_2_points(x, y, wall.start_pos.x, wall.start_pos.y)
-            angle_line2 = self.get_line_degree_with_2_points(x, y, wall.end_pos.x, wall.end_pos.y)
-            if angle_line1 < angle < angle_line2 or angle_line2 < angle < angle_line1:
-                laser_line_equation = self.get_line_formula_by_angle_and_point(x, y, angle)
-                wall_equation = self.walls_line_equation[i]
-                result.append(self.get_lines_meet_point(laser_line_equation, wall_equation))
-        return sorted(result)[0] if result else self._get_fire_max_point(x, y, angle)
+            angle1 = self.get_line_degree_with_2_points(x, y, wall.start_pos.x, wall.start_pos.y)
+            angle2 = self.get_line_degree_with_2_points(x, y, wall.end_pos.x, wall.end_pos.y)
+            if angle1 < angle < angle2 or angle1 > angle > angle2:
+                a, b, c = self.walls_line_equation[i]
+                h = (a * x) + (b * y) + c
+                if h != 0:
+                    x2 = x + self.world_map["medics"]["laser_range"] * math.cos(math.radians(angle))
+                    y2 = y - self.world_map["medics"]["laser_range"] * math.sin(math.radians(angle))
+                    fire_line_eq = ((y - y2), (x2 - x), ((y * (x - x2)) + (x * (y2 - y))))
+                    a, b = self.get_lines_meet_point(fire_line_eq, self.walls_line_equation[i])
+                    if ((x-a)**2 + (y - b)**2)**0.5 <= ((x-x_max)**2 + (y - y_max)**2)**0.5:
+                        x_max, y_max = a, b
+                    result.append(self.get_lines_meet_point(fire_line_eq, self.walls_line_equation[i]))
+        return x_max, y_max, fire_line_eq
+
+    def check_fire_crush_the_medics(self, x_src, y_src, x_dst, y_dst, line_eq, medic):
+        res_medic = None
+        for side in self.world.medics:
+            if side != medic.side_name:
+                for i in range(len(self.world.medics[side])):
+                    a, b, c = line_eq
+                    o_medic = self.world.medics[side][i]
+                    dist = o_medic.position.x * a + o_medic.position.y * b + c
+                    if dist <= o_medic.radius:
+                        a1, b1 = -b, a
+                        c1 = -(o_medic.position.x * a1 + o_medic.position.y * b1)
+                        crush_line_eq = [a1, b1, c1]
+                        x2, y2 = self.get_lines_meet_point(line_eq, crush_line_eq)
+                        if ((x2 - x_src)**2 + (y2 - y_src)**2)**0.5 <= ((x_dst - x_src)**2 + (y_dst - y_src)**2)**0.5:
+                            x_dst, y_dst = x2, y2
+                            res_medic = o_medic
+
+        return x_dst, y_dst, res_medic
+
+
 
     def _get_fire_max_point(self, x1, y1, angle):
         x = x1 + math.cos(math.radians(angle)) * self.world_map["medics"]["laser_range"]
