@@ -26,4 +26,9 @@ class AI(RealtimeAI):
                 Move(medic.id, 0.6),
                 Fire(medic.id, 10)
             ]
-            self.send_command(random.choice(a[0:3]))
+            if medic.id == 1000:
+                self.send_command(Fire(medic.id, 0))
+            elif medic.id == 1001:
+                continue
+            else:
+                self.send_command(random.choice(a[0:3]))

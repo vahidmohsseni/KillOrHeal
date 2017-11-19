@@ -59,6 +59,10 @@ class GameHandler(RealtimeGameHandler):
             medic = self.create_medics(i + world_map["medics"]["number"], self.sides[1], p2, angle2, world_map)
             # medic.max_move_distance = self.calc_medic_max_move(medic)
             self.world.medics[self.sides[1]].append(medic)
+        medic = self.create_medics(1000, self.sides[1], Position(14.0, 5.7), 345, world_map)
+        self.world.medics[self.sides[1]].append(medic)
+        medic = self.create_medics(1001, self.sides[0], Position(16.4, 6.3), 120, world_map)
+        self.world.medics[self.sides[0]].append(medic)
 
         for i in range(world_map["patients"]["number"]):
             p = Position(self.get_random_float(world_map["patients"]["radius"],
@@ -252,7 +256,8 @@ class GameHandler(RealtimeGameHandler):
 
         # delete medics whose health is 0
         for medic in self.down_medics_ref:
-            for ref in self.medics_ref[medic.side_name]:
+            ref = self.medics_ref.get((medic.side_name, medic.id), None)
+            if ref:
                 self.canvas.delete_element(ref)
         self.down_medics_ref = []
         # end delete medics whose health is 0
@@ -274,8 +279,8 @@ class GameHandler(RealtimeGameHandler):
                      world_map["medics"]["max_fire_angle"],
                      world_map["medics"]['health'],
                      world_map["medics"]['max_health'],
-                     world_map["medics"]["laser_damage"],
                      world_map["medics"]["laser_count"],
+                     world_map["medics"]["laser_damage"],
                      world_map["medics"]["laser_range"],
                      world_map["medics"]["laser_max_count"],
                      world_map["medics"]["healing_remaining_time"],
@@ -494,7 +499,17 @@ class GameHandler(RealtimeGameHandler):
             wall = self.world.walls[i]
             angle1 = self.get_line_degree_with_2_points(x, y, wall.start_pos.x, wall.start_pos.y)
             angle2 = self.get_line_degree_with_2_points(x, y, wall.end_pos.x, wall.end_pos.y)
-            if angle1 < angle < angle2 or angle1 > angle > angle2:
+            # if angle1 < angle < angle2 or angle1 > angle > angle2:
+            v1 = (wall.start_pos.x - x, wall.start_pos.y - y)
+            size_v1 = (v1[0] ** 2 + v1[1]**2)**0.5
+            v2 = (wall.end_pos.x - x, wall.end_pos.y - y)
+            size_v2 = (v2[0] ** 2 + v2[1]**2)**0.5
+            theta = math.degrees(math.acos((v1[0] * v2[0] + v1[1] * v2[1]) / (size_v1 * size_v2)))
+            vl = (x_max - x, y_max - y)
+            size_vl = (vl[0] ** 2 + vl[1]**2)**0.5
+            theta1 = math.degrees(math.acos((v1[0] * vl[0] + v1[1] * vl[1]) / (size_v1 * size_vl)))
+            theta2 = math.degrees(math.acos((vl[0] * v2[0] + vl[1] * v2[1]) / (size_vl * size_v2)))
+            if abs(theta - theta1 - theta2) < 0.01:
                 a, b, c = self.walls_line_equation[i]
                 h = (a * x) + (b * y) + c
                 if h != 0:
@@ -514,15 +529,138 @@ class GameHandler(RealtimeGameHandler):
                 for i in range(len(self.world.medics[side])):
                     a, b, c = line_eq
                     o_medic = self.world.medics[side][i]
+                    r = o_medic.radius
                     dist = o_medic.position.x * a + o_medic.position.y * b + c
                     if dist <= o_medic.radius:
-                        a1, b1 = -b, a
-                        c1 = -(o_medic.position.x * a1 + o_medic.position.y * b1)
-                        crush_line_eq = [a1, b1, c1]
-                        x2, y2 = self.get_lines_meet_point(line_eq, crush_line_eq)
-                        if ((x2 - x_src)**2 + (y2 - y_src)**2)**0.5 <= ((x_dst - x_src)**2 + (y_dst - y_src)**2)**0.5:
-                            x_dst, y_dst = x2, y2
-                            res_medic = o_medic
+                        x_tmp, y_tmp, x1_tmp, y1_tmp, x2_tmp, y2_tmp, = [None for _ in range(6)]
+                        if a == 0:
+                            y_tmp = -c / b
+                            delta = (-2 * o_medic.position.x)**2 - 4 * (o_medic.position.x ** 2 + (y_tmp - o_medic.position.y)**2 - o_medic.radius**2)
+                            if delta > 0:
+                                x1_tmp = ((2 * o_medic.position.x) + delta**0.5) / 2.0
+                                x2_tmp = ((2 * o_medic.position.x) - delta**0.5) / 2.0
+                            elif delta == 0:
+                                x_tmp = o_medic.position.x
+                            else:
+                                continue
+                        elif b == 0:
+                            x_tmp = -c / a
+                            delta = (-2 * o_medic.position.y)**2 - 4 * (o_medic.position.y ** 2 + (x_tmp - o_medic.position.x)**2 - o_medic.radius**2)
+                            if delta > 0:
+                                y1_tmp = ((2 * o_medic.position.y) + delta**0.5) / 2.0
+                                y2_tmp = ((2 * o_medic.position.y) - delta**0.5) / 2.0
+                            elif delta == 0:
+                                y_tmp = o_medic.position.y
+                            else:
+                                continue
+                        else:
+                            delta = (-2 * a**2 * o_medic.position.y + 2 * a * b * o_medic.position.x + 2 * b * c)**2 - 4 * (a**2 + b **2) * (a**2 * o_medic.position.x**2 + a**2 * o_medic.position.y**2 + 2 * a * c * o_medic.position.x + c**2 - a**2 * r**2)
+                            if delta > 0:
+                                y1_tmp = (-(-2 * a**2 * o_medic.position.y + 2 * a * b * o_medic.position.x + 2 * b * c) + delta**0.5) / (2 * (a**2 + b**2))
+                                y2_tmp = (-(-2 * a**2 * o_medic.position.y + 2 * a * b * o_medic.position.x + 2 * b * c) - delta**0.5) / (2 * (a**2 + b**2))
+                                x1_tmp = (-c - b * y1_tmp) / a
+                                x2_tmp = (-c - b * y2_tmp) / a
+                            elif delta == 0:
+                                y_tmp = (-(-2 * a**2 * o_medic.position.y + 2 * a * b * o_medic.position.x + 2 * b * c)) / (2 * (a**2 + b**2))
+                                x_tmp = (-c - b * y_tmp) / a
+
+                            else:
+                                continue
+                        if x2_tmp is not None and y2_tmp is not None:
+                            vl = (x_dst - x_src, y_dst - y_src)
+                            vm1 = (x1_tmp - x_src, y1_tmp - y_src)
+                            vm2 = (x2_tmp - x_src, y2_tmp - y_src)
+
+                            if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d1 <= d2 and d1 <= d:
+                                        x_dst, y_dst = x1_tmp, y1_tmp
+                                        res_medic = o_medic
+                                    elif d2 <= d1 and d2 < d:
+                                        x_dst, y_dst = x2_tmp, y2_tmp
+                                        res_medic = o_medic
+                                else:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    if d1 <= d:
+                                        x_dst, y_dst = x1_tmp, y1_tmp
+                                        res_medic = o_medic
+                            else:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d2 <= d:
+                                        x_dst, y_dst = x2_tmp, y2_tmp
+                                        res_medic = o_medic
+                        elif x2_tmp is not None and y_tmp is not None:
+                            vl = (x_dst - x_src, y_dst - y_src)
+                            vm1 = (x1_tmp - x_src, y_tmp - y_src)
+                            vm2 = (x2_tmp - x_src, y_tmp - y_src)
+                            if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d1 <= d2 and d1 <= d:
+                                        x_dst, y_dst = x1_tmp, y_tmp
+                                        res_medic = o_medic
+                                    elif d2 <= d1 and d2 < d:
+                                        x_dst, y_dst = x2_tmp, y_tmp
+                                        res_medic = o_medic
+                                else:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    if d1 <= d:
+                                        x_dst, y_dst = x1_tmp, y_tmp
+                                        res_medic = o_medic
+                            else:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d2 <= d:
+                                        x_dst, y_dst = x2_tmp, y_tmp
+                                        res_medic = o_medic
+
+                        elif y2_tmp is not None and x_tmp is not None:
+                            vl = (x_dst - x_src, y_dst - y_src)
+                            vm1 = (x_tmp - x_src, y1_tmp - y_src)
+                            vm2 = (x_tmp - x_src, y2_tmp - y_src)
+                            if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d1 <= d2 and d1 <= d:
+                                        x_dst, y_dst = x_tmp, y1_tmp
+                                        res_medic = o_medic
+                                    elif d2 <= d1 and d2 < d:
+                                        x_dst, y_dst = x_tmp, y2_tmp
+                                        res_medic = o_medic
+                                else:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                                    if d1 <= d:
+                                        x_dst, y_dst = x_tmp, y1_tmp
+                                        res_medic = o_medic
+                            else:
+                                if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                                    d = (vl[0]**2 + vl[1]**2)**0.5
+                                    d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                                    if d2 <= d:
+                                        x_dst, y_dst = x_tmp, y2_tmp
+                                        res_medic = o_medic
+                        elif x_tmp is not None and y_tmp is not None:
+                            vl = (x_dst - x_src, y_dst - y_src)
+                            vm = (x_tmp - x_src, y_tmp - y_src)
+                            if vl[0]*vm[0] + vl[1]*vm[1] > 0:
+                                d = (vl[0]**2 + vl[1]**2)**0.5
+                                d1 = (vm[0]**2 + vm[1]**2)**0.5
+                                if d1 <= d:
+                                    x_dst, y_dst = x_tmp, y_tmp
+                                    res_medic = o_medic
 
         return x_dst, y_dst, res_medic
 

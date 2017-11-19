@@ -16,7 +16,7 @@
         "healing_remaining_time": 0,
         "laser_max_count": 3,
         "laser_range": 3,
-        "laser_count": 0,
+        "laser_count": 1000,
         "laser_damage": 20
     },
 
