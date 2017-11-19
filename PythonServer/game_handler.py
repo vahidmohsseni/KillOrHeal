@@ -17,6 +17,8 @@ import math
 class GameHandler(RealtimeGameHandler):
     def on_recv_command(self, side_name, agent_name, command_type, command):
         # print('command: %s %s %s' % (side_name, command_type, command))
+        if None in command.__dict__.values():
+            return
         if command.name() == Fire().name():
             self.commands[(side_name, command.id)] = ((side_name, command), 1)
         else:
@@ -27,7 +29,7 @@ class GameHandler(RealtimeGameHandler):
         self.commands = {}
         self.world = World()
         # fix sides into right list
-        self.sides = self.sides.keys()
+        self.sides = list(self.sides.keys())
 
         world_map_file = open(self.config["map"], "r")
         self.world_map = world_map = json.loads(world_map_file.read())
@@ -200,8 +202,8 @@ class GameHandler(RealtimeGameHandler):
             self.canvas.delete_element(self.patients_ref[item[0]])
             if item[1] != -1:
                 medic = item[1]
-                x = medic.position.x * width_coefficient
-                y = medic.position.y * height_coefficient
+                x = int(medic.position.x * width_coefficient)
+                y = int(medic.position.y * height_coefficient)
                 rx = int(2 * medic.radius * width_coefficient)
                 self.medics_ref[(medic.side_name, medic.id)] = self.canvas.create_image(medic.side_name, x, y,
                                                                                         scale_type=ScaleType.ScaleToWidth,
@@ -222,8 +224,8 @@ class GameHandler(RealtimeGameHandler):
                     img = "Laser"
                 else:
                     img = "Healpack"
-                x = pup.position.x * width_coefficient
-                y = pup.position.y * height_coefficient
+                x = int(pup.position.x * width_coefficient)
+                y = int(pup.position.y * height_coefficient)
                 rx = int(2 * 0.5 * width_coefficient)
                 ref = self.canvas.create_image(img, x, y, scale_type=ScaleType.ScaleToWidth, scale_value=rx,
                                                center_origin=True)
