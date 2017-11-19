@@ -186,8 +186,8 @@ class GameHandler(RealtimeGameHandler):
         # update medics positions
         for side in self.world.medics:
             for medic in self.world.medics[side]:
-                x = medic.position.x * width_coefficient
-                y = medic.position.y * height_coefficient
+                x = int(medic.position.x * width_coefficient)
+                y = int(medic.position.y * height_coefficient)
                 tmp = self.medics_ref.get((side, medic.id), None)
                 if tmp >= 0:
                     self.canvas.edit_image(self.medics_ref[side, medic.id], x, y, angle=medic.angle)
