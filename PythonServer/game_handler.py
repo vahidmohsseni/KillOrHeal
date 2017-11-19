@@ -160,7 +160,8 @@ class GameHandler(RealtimeGameHandler):
                     self._handle_command(side, medic, command)
         # should damaged medics be removed
         for medic in self.down_medics:
-            self.world.medics[medic.side_name].remove(medic)
+            if medic in self.world.medics[medic.side_name]:
+                self.world.medics[medic.side_name].remove(medic)
         self.down_medics = []
         for side, command in other_cmds:
             for medic in self.world.medics[side]:
@@ -415,6 +416,8 @@ class GameHandler(RealtimeGameHandler):
                     if o_medic.health <= 0:
                         self.down_medics.append(o_medic)
                         self.down_medics_ref.append(o_medic)
+                        self.world.scores[side] += o_medic.death_score
+
                 self.create_fire_ref.append([x2, y2, x1, y1])
 
     def _create_power_ups_randomly(self):
