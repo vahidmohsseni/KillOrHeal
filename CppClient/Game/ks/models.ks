@@ -37,6 +37,8 @@ laser_damage = int
 laser_range = float
 laser_max_count = int
 healing_remaining_time = int
+time_to_reload = int
+reload_time = int
 death_score = int
 
 
