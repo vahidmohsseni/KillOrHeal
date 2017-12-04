@@ -21,19 +21,17 @@
 		"host": "0.0.0.0",
 		"port": 5001,
 		"max_spectators": 3,
-		"save_replay": false,
+		"save_replay": true,
 		"replay_dir": "replays",
 		"replay_filename": null,
-		"width": 1660,
+		"width": 960,
 		"height": 960,
-		"status_offset": 960,
 		"images": {
-			"Flip": "images/kia/team1_angry.png",
-          	"Flop": "images/kia/team2_angry.png",
-			"CapturablePatient": "images/kia/patient.png",
-			"Patient": "images/kia/patient2.png",
-			"Laser": "images/kia/gun.png",
-			"Healpack": "images/kia/banana.png"
+			"Flip": "images/Red.png",
+          	"Flop": "images/Blue.png",
+			"Patient": "images/Patient.png",
+			"Laser": "images/LaserGun.png",
+			"Healpack": "images/HealPack.png"
 		}
 	},
 

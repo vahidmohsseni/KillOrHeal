@@ -30,5 +30,9 @@ class AI(RealtimeAI):
                 self.send_command(Fire(medic.id, 0))
             elif medic.id == 1001:
                 continue
+            elif medic.id == 10001:
+                continue
+            elif medic.id == 10002:
+                continue
             else:
                 self.send_command(random.choice(a[0:3]))

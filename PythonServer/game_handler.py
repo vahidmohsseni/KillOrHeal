@@ -36,42 +36,70 @@ class GameHandler(RealtimeGameHandler):
         world_map_file.close()
         # set world height and width
         self.world.height, self.world.width = (world_map["height"], world_map["width"])
-        # add medics and patients to world
-        self.world.medics = {self.sides[0]: [], self.sides[1]: []}
-        self.world.patients = []
-        for i in range(world_map["medics"]["number"]):
-            p1 = Position(self.get_random_float(world_map["medics"]["radius"],
-                                                self.world.width - 2 * world_map["medics"]["radius"]),
-                          float(random.randint(0, self.world.height)))
-            # p1 = [Position(8.4, 16.7), Position(14.3, 9.9)][i]
-            angle1 = self.get_random_float(0, 360)
-            # angle1 = 45.0
-            p2 = Position(self.get_random_float(world_map["medics"]["radius"],
-                                                self.world.width - 2 * world_map["medics"]["radius"]),
-                          float(random.randint(0, self.world.height)))
-            angle2 = self.get_random_float(0, 360)
-            # p2 = [Position(9.0, 18.7), Position(14.3, 9.9)][i]
-            # angle2 = 90.0
-            medic = self.create_medics(i, self.sides[0], p1, angle1, world_map)
-            # medic.max_move_distance = self.calc_medic_max_move(medic)
+        create_random = 0
+        if create_random:
+            # add medics and patients to world
+            self.world.medics = {self.sides[0]: [], self.sides[1]: []}
+            self.world.patients = []
+            for i in range(world_map["medics"]["number"]):
+                p1 = Position(self.get_random_float(2 * world_map["medics"]["radius"],
+                                                    self.world.width - 2 * world_map["medics"]["radius"]),
+                              float(random.randint(0, self.world.height)))
+                # p1 = [Position(8.4, 16.7), Position(14.3, 9.9)][i]
+                angle1 = self.get_random_float(0, 360)
+                # angle1 = 45.0
+                p2 = Position(self.get_random_float(2 * world_map["medics"]["radius"],
+                                                    self.world.width - 2 * world_map["medics"]["radius"]),
+                              float(random.randint(0, self.world.height)))
+                angle2 = self.get_random_float(0, 360)
+                # p2 = [Position(9.0, 18.7), Position(14.3, 9.9)][i]
+                # angle2 = 90.0
+                medic = self.create_medics(i, self.sides[0], p1, angle1, world_map)
+                # medic.max_move_distance = self.calc_medic_max_move(medic)
+                self.world.medics[self.sides[0]].append(medic)
+
+                medic = self.create_medics(i + world_map["medics"]["number"], self.sides[1], p2, angle2, world_map)
+                # medic.max_move_distance = self.calc_medic_max_move(medic)
+                self.world.medics[self.sides[1]].append(medic)
+            medic = self.create_medics(1000, self.sides[1], Position(14.0, 5.7), 345, world_map)
+            self.world.medics[self.sides[1]].append(medic)
+            medic = self.create_medics(1001, self.sides[0], Position(16.4, 6.3), 120, world_map)
             self.world.medics[self.sides[0]].append(medic)
 
-            medic = self.create_medics(i + world_map["medics"]["number"], self.sides[1], p2, angle2, world_map)
-            # medic.max_move_distance = self.calc_medic_max_move(medic)
-            self.world.medics[self.sides[1]].append(medic)
-        medic = self.create_medics(1000, self.sides[1], Position(14.0, 5.7), 345, world_map)
-        self.world.medics[self.sides[1]].append(medic)
-        medic = self.create_medics(1001, self.sides[0], Position(16.4, 6.3), 120, world_map)
-        self.world.medics[self.sides[0]].append(medic)
+            medic = self.create_medics(10002, self.sides[1], Position(2.5, 17.5), 123, world_map)
+            self.world.medics[medic.side_name].append(medic)
+            medic = self.create_medics(10002, self.sides[0], Position(16.7, 7.1), 234, world_map)
+            self.world.medics[medic.side_name].append(medic)
 
-        for i in range(world_map["patients"]["number"]):
-            p = Position(self.get_random_float(world_map["patients"]["radius"],
-                                               self.world.width - 2 * world_map["patients"]["radius"]),
-                         float(random.randint(0, self.world.height)))
-            self.world.patients.append(self.create_patients(p, world_map))
-        self.world.patients.append(self.create_patients(Position(2.0, 18.0), world_map, True))
-
-        # end add medics and patients
+            for i in range(world_map["patients"]["number"]):
+                p = Position(self.get_random_float(world_map["patients"]["radius"],
+                                                   self.world.width - 2 * world_map["patients"]["radius"]),
+                             float(random.randint(0, self.world.height)))
+                self.world.patients.append(self.create_patients(p, world_map))
+                # end add medics and patients
+        else:  # not random from map file!
+            # add medics and patients to world
+            self.world.medics = {self.sides[0]: [], self.sides[1]: []}
+            self.world.patients = []
+            counter1 = 0
+            for direction in world_map["medics_position"][self.sides[0]]:
+                p = Position(direction["x"], direction["y"])
+                angle = direction["angle"]
+                medic = self.create_medics(counter1, self.sides[0], p, angle, world_map)
+                self.world.medics[self.sides[0]].append(medic)
+                counter1 += 1
+            counter2 = 0
+            for direction in world_map["medics_position"][self.sides[1]]:
+                p = Position(direction["x"], direction["y"])
+                angle = direction["angle"]
+                medic = self.create_medics(counter2, self.sides[1], p, angle, world_map)
+                self.world.medics[self.sides[1]].append(medic)
+                counter2 += 1
+            for patient in world_map["patients_position"]:
+                print patient
+                p = Position(patient["x"], patient["y"])
+                capturable = patient["capable"]
+                self.world.patients.append(self.create_patients(p, world_map, capturable))
 
         # set world scores
         self.world.scores = {}
@@ -90,7 +118,17 @@ class GameHandler(RealtimeGameHandler):
                              ((start_pos.y - end_pos.y) * start_pos.x) + ((end_pos.x - start_pos.x) * start_pos.y))
             self.walls_line_equation.append(line_equation)
 
-            # end set walls into world
+        # end set walls into world
+
+        # confidant of map bound
+        for wall in self.confidence_of_map_bound():
+            start_pos = Position(wall[0]["x"], wall[0]["y"])
+            end_pos = Position(wall[1]["x"], wall[1]["y"])
+            self.world.walls.append(Wall(start_pos, end_pos))
+            line_equation = (end_pos.y - start_pos.y, start_pos.x - end_pos.x,
+                             ((start_pos.y - end_pos.y) * start_pos.x) + ((end_pos.x - start_pos.x) * start_pos.y))
+            self.walls_line_equation.append(line_equation)
+        # end on confidence of map bound
 
         # set powerups positions
         self.power_ups = []
@@ -102,16 +140,20 @@ class GameHandler(RealtimeGameHandler):
         # list for medics should be deleted after laser
         self.down_medics = []
 
+        # list of patients should be deleted after they healed
+        self.down_patients = []
+
     def on_initialize_gui(self):
         print('initialize gui')
         self.gui_config = gui_config = self.config["gui"]
         # set coefficient of gui height and width
         # from chillin_server.gui.canvas import Canvas
         # self.canvas = Canvas()
-        width_coefficient = self.canvas.width / self.world.width
-        height_coefficient = self.canvas.height / self.world.height
+        width_coefficient = self.world_map["monitor_width"] / self.world.width
+        height_coefficient = self.world_map["monitor_height"] / self.world.height
 
         self.medics_ref = {}
+        self.medics_info_ref = {}
         for side in self.world.medics:
             for medic in self.world.medics[side]:
                 index = self.sides.index(side)
@@ -126,26 +168,74 @@ class GameHandler(RealtimeGameHandler):
                                                                                    scale_value=rx,
                                                                                    angle=medic.angle,
                                                                                    center_origin=True)
+                x += 12
+                y += -45
+                refs = []
+                mid = str(medic.id)
+                text_color = self.canvas.make_rgba(12, 12, 12, 255)
+                refs.append(self.canvas.create_text(mid, x, y, text_color, 22))
+                x1 = x - 12 - int(medic.radius * width_coefficient)
+                y1 = y + 45 + int(medic.radius * width_coefficient)
+                x2 = x1 + int(medic.health * (2 * medic.radius * width_coefficient / medic.max_health))
+                y2 = y1
+                color = self.canvas.make_rgba(56, 188, 72, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                x1 = x1
+                y1 += 4
+                x2 = x1 + int(medic.laser_count * (2 * medic.radius * width_coefficient / medic.laser_max_count))
+                y2 = y1
+                color = self.canvas.make_rgba(223, 96, 2, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                x1 = x1
+                y1 += 4
+                x2 = x1 + int(medic.time_to_reload * (2 * medic.radius * width_coefficient / medic.reload_time))
+                y2 = y1
+                color = self.canvas.make_rgba(26, 15, 240, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                self.medics_info_ref[(side, medic.id)] = refs
+
         self.patients_ref = []
         self.modifying_patients_and_medics = []  # tuple(patient_index, new Medic if exists)
-
         for patient in self.world.patients:
             x = int(patient.position.x * width_coefficient)
             y = int(patient.position.y * height_coefficient)
             rx = int(patient.radius * width_coefficient)
             ry = int(patient.radius * height_coefficient)
             # print "patient", x, y, rx, ry
-            self.patients_ref.append(self.canvas.create_image("Patient", x, y, scale_type=ScaleType.ScaleToWidth,
-                                                              scale_value=rx,
-                                                              center_origin=True))
+            if patient.capturable:
+                self.patients_ref.append(self.canvas.create_image("CapturablePatient", x, y, scale_type=ScaleType.ScaleToWidth,
+                                                                  scale_value=rx,
+                                                                  center_origin=True))
+            else:
+                self.patients_ref.append(self.canvas.create_image("Patient", x, y, scale_type=ScaleType.ScaleToWidth,
+                                                                  scale_value=rx,
+                                                                  center_origin=True))
 
         for wall in self.world.walls:
             x1 = int(wall.start_pos.x * width_coefficient)
             y1 = int(wall.start_pos.y * height_coefficient)
             x2 = int(wall.end_pos.x * width_coefficient)
             y2 = int(wall.end_pos.y * height_coefficient)
-            wall_color = self.canvas.make_rgba(96, 9, 184, 255)
+            wall_color = self.canvas.make_rgba(12, 12, 12, 255)
             self.canvas.create_line(x1, y1, x2, y2, wall_color)
+
+        # set cycle counter on gui
+        x = 970
+        y = 30
+        color = self.canvas.make_rgba(0, 40, 10, 255)
+        self.cycle_ref = self.canvas.create_text("Cycle: " + str(self.current_cycle), x, y, color, 30)
+
+        # set score board on gui
+        sides_color = {self.sides[0]: self.canvas.make_rgba(213, 211, 3, 255),
+                       self.sides[1]: self.canvas.make_rgba(150, 115, 70, 255)}
+
+        self.canvas.create_image(self.sides[0], 1040, 200, scale_type=ScaleType.ScaleToWidth,
+                                 scale_value=80, angle=270, center_origin=True)
+        self.canvas.create_image(self.sides[1], 1220, 200, scale_type=ScaleType.ScaleToWidth,
+                                 scale_value=80, angle=270, center_origin=True)
+        self.scores_ref = self.canvas.create_text(str(self.world.scores[self.sides[0]]) + " :score: " +
+                                                  str(self.world.scores[self.sides[1]]),
+                                                  1130, 280, color, 40, center_origin=True)
 
         self.power_ups_ref = {}  # key = (x, y)
         self.modifying_power_ups = []  # [bool create or delete, id]
@@ -168,7 +258,10 @@ class GameHandler(RealtimeGameHandler):
         for medic in self.down_medics:
             if medic in self.world.medics[medic.side_name]:
                 self.world.medics[medic.side_name].remove(medic)
+                self.world.patients.append(self.create_patients(Position(medic.position.x, medic.position.y),
+                                                                self.world_map, True))
         self.down_medics = []
+
         for side, command in other_cmds:
             for medic in self.world.medics[side]:
                 if medic.id == command.id:
@@ -178,6 +271,7 @@ class GameHandler(RealtimeGameHandler):
 
         self._create_power_ups_randomly()
         self._remove_powerups_end_time()
+        self._reload_laser_count()
         # empty commands dict
         self.commands = {}
 
@@ -187,23 +281,71 @@ class GameHandler(RealtimeGameHandler):
 
     def on_update_gui(self):
         print('update gui')
-        width_coefficient = self.canvas.width / self.world.width
-        height_coefficient = self.canvas.height / self.world.height
+        width_coefficient = self.world_map["monitor_width"] / self.world.width
+        height_coefficient = self.world_map["monitor_height"] / self.world.height
         # update medics positions
         for side in self.world.medics:
             for medic in self.world.medics[side]:
                 x = int(medic.position.x * width_coefficient)
                 y = int(medic.position.y * height_coefficient)
-                tmp = self.medics_ref.get((side, medic.id), None)
+                tmp = self.medics_ref.get((side, medic.id), -1)
+                tmp2 = self.medics_info_ref.get((side, medic.id), -1)
                 if tmp >= 0:
                     self.canvas.edit_image(self.medics_ref[side, medic.id], x, y, angle=medic.angle)
+                    if tmp2 >= 0:
+                        id_ref, health_ref, laser_ref, reload_ref = self.medics_info_ref[(side, medic.id)]
+                        x += 12
+                        y += -45
+                        self.canvas.edit_text(id_ref, str(medic.id),x, y)
+                        x1 = x - 12 - int(medic.radius * width_coefficient)
+                        y1 = y + 45 + int(medic.radius * width_coefficient)
+                        x2 = x1 + int(medic.health * (2 * medic.radius * width_coefficient / medic.max_health))
+                        y2 = y1
+                        self.canvas.edit_line(health_ref, x1, y1, x2, y2)
+                        x1 = x1
+                        y1 += 4
+                        x2 = x1 + int(medic.laser_count * (2 * medic.radius * width_coefficient / medic.laser_max_count))
+                        y2 = y1
+                        self.canvas.edit_line(laser_ref, x1, y1, x2, y2)
+                        x1 = x1
+                        y1 += 4
+                        x2 = x1 + int(medic.time_to_reload * (2 * medic.radius * width_coefficient / medic.reload_time))
+                        y2 = y1
+                        self.canvas.edit_line(reload_ref, x1, y1, x2, y2)
+
                 else:
                     continue
+
         # end update medics positions
+
+        # delete medics whose health is 0
+        for medic in self.down_medics_ref:
+            ref = self.medics_ref.get((medic.side_name, medic.id), -1)
+            info_refs = self.medics_info_ref.get((medic.side_name, medic.id), -1)
+            if ref >= 0:
+                self.canvas.delete_element(ref)
+                if info_refs:
+                    for i in info_refs:
+                        self.canvas.delete_element(i)
+                x = int(medic.position.x * width_coefficient)
+                y = int(medic.position.y * height_coefficient)
+                rx = int(self.world_map["patients"]["radius"] * width_coefficient)
+                ry = int(medic.radius * height_coefficient)
+                # print "patient", x, y, rx, ry
+                self.patients_ref.append(self.canvas.create_image("CapturablePatient", x, y,
+                                                                  scale_type=ScaleType.ScaleToWidth,
+                                                                  scale_value=rx,
+                                                                  center_origin=True))
+        self.down_medics_ref = []
+        # end delete medics whose health is 0
 
         # update patients if remove and create new medics if needed
         for item in self.modifying_patients_and_medics:
-            self.canvas.delete_element(self.patients_ref[item[0]])
+            try:
+                self.canvas.delete_element(self.patients_ref[item[0]])
+                self.patients_ref.remove(self.patients_ref[item[0]])
+            except:
+                pass
             if item[1] != -1:
                 medic = item[1]
                 x = int(medic.position.x * width_coefficient)
@@ -214,6 +356,32 @@ class GameHandler(RealtimeGameHandler):
                                                                                         scale_value=rx,
                                                                                         angle=medic.angle,
                                                                                         center_origin=True)
+                x += 12
+                y += -45
+                refs = []
+                mid = str(medic.id)
+                text_color = self.canvas.make_rgba(12, 12, 12, 255)
+                refs.append(self.canvas.create_text(mid, x, y, text_color, 22))
+                x1 = x - 12 - int(medic.radius * width_coefficient)
+                y1 = y + 45 + int(medic.radius * width_coefficient)
+                x2 = x1 + int(medic.health * (2 * medic.radius * width_coefficient / medic.max_health))
+                y2 = y1
+                color = self.canvas.make_rgba(56, 188, 72, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                x1 = x1
+                y1 += 4
+                x2 = x1 + int(medic.laser_count * (2 * medic.radius * width_coefficient / medic.laser_max_count))
+                y2 = y1
+                color = self.canvas.make_rgba(223, 96, 2, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                x1 = x1
+                y1 += 4
+                x2 = x1 + int(medic.time_to_reload * (2 * medic.radius * width_coefficient / medic.reload_time))
+                y2 = y1
+                color = self.canvas.make_rgba(26, 15, 240, 255)
+                refs.append(self.canvas.create_line(x1, y1, x2, y2, color, 4))
+                self.medics_info_ref[(medic.side_name, medic.id)] = refs
+
         self.modifying_patients_and_medics = []  # should be empty after everything done
         # end update patients if remove and create new medics if needed
 
@@ -249,18 +417,18 @@ class GameHandler(RealtimeGameHandler):
             x2 = int(i[2] * width_coefficient)
             y2 = int(i[3] * height_coefficient)
             wall_color = self.canvas.make_rgba(203, 96, 1, 255)
-            ref = self.canvas.create_line(x1, y1, x2, y2, wall_color)
+            ref = self.canvas.create_line(x1, y1, x2, y2, wall_color, 2)
             self.delete_fire_ref.append(ref)
         self.create_fire_ref = []
         # end draw fire and remove
 
-        # delete medics whose health is 0
-        for medic in self.down_medics_ref:
-            ref = self.medics_ref.get((medic.side_name, medic.id), None)
-            if ref:
-                self.canvas.delete_element(ref)
-        self.down_medics_ref = []
-        # end delete medics whose health is 0
+        # update cycle
+        self.canvas.edit_text(self.cycle_ref, "Cycle: " + str(self.current_cycle))
+
+        # update score board
+        self.canvas.edit_text(self.scores_ref, str(self.world.scores[self.sides[0]]) + " :score: " +
+                              str(self.world.scores[self.sides[1]]))
+
         self.canvas.apply_actions()
 
     @staticmethod
@@ -284,6 +452,8 @@ class GameHandler(RealtimeGameHandler):
                      world_map["medics"]["laser_range"],
                      world_map["medics"]["laser_max_count"],
                      world_map["medics"]["healing_remaining_time"],
+                     world_map["medics"]["time_to_reload"],
+                     world_map["medics"]["reload_time"],
                      world_map["medics"]["death_score"])
 
     @staticmethod
@@ -297,7 +467,7 @@ class GameHandler(RealtimeGameHandler):
         return Patient(position,
                        world_map["patients"]["radius"],
                        world_map["patients"]["healing_duration"],
-                       world_map["patients"]["capturable"],
+                       False,
                        world_map["patients"]["heal_score"])
 
     def _handle_command(self, side, medic, cmd):
@@ -357,23 +527,24 @@ class GameHandler(RealtimeGameHandler):
                 medic.position.x = x
                 medic.position.y = y
 
-
     def calc_medic_max_move(self, medic):
         pass
 
     def check_medic_crush_the_wall(self, medic, x, y):
         result = []
         for i in range(len(self.world.walls)):
-            a = self.walls_line_equation[i][0]
-            b = self.walls_line_equation[i][1]
-            c = self.walls_line_equation[i][2]
-            if (a * x) + (b * y) + c == 0:
+            wall_line_eq = self.walls_line_equation[i]
+            wall = self.world.walls[i]
+            a = wall_line_eq[0]
+            b = wall_line_eq[1]
+            c = wall_line_eq[2]
+            if abs(((a * x) + (b * y) + c) / (a**2 + b**2)**0.5) < 0.001:
                 a1 = -b
                 b1 = a
-                c1 = (-1.0 * a * self.world.walls[i].start_pos.y) + (b * self.world.walls[i].start_pos.x)
+                c1 = (-1.0 * a * wall.start_pos.y) + (b * wall.start_pos.x)
                 a2 = -b
                 b2 = a
-                c2 = (-1.0 * a * self.world.walls[i].end_pos.y) + (b * self.world.walls[i].end_pos.x)
+                c2 = (-1.0 * a * wall.end_pos.y) + (b * wall.end_pos.x)
                 r1 = abs(((a1 * x) + (b1 * y) + c1) / (a1 ** 2 + b1 ** 2) ** 0.5)
                 r2 = abs(((a2 * x) + (b2 * y) + c2) / (a2 ** 2 + b2 ** 2) ** 0.5)
                 if r1 < medic.radius:
@@ -382,13 +553,25 @@ class GameHandler(RealtimeGameHandler):
                 elif r2 < medic.radius:
                     result.append((i, r2 - medic.radius))
                     break
+                elif abs(((a * x) + (b * y) + c) / (a ** 2 + b ** 2) ** 0.5) < medic.radius:
+                    if self.has_line_and_circle_meet_point(wall.start_pos.x, wall.start_pos.y,
+                                                           wall.end_pos.x, wall.end_pos.y, wall_line_eq,
+                                                           x, y, medic.radius):
+                        result.append(i)
+                        break
                 else:
                     continue
             elif abs(((a * x) + (b * y) + c) / (a ** 2 + b ** 2) ** 0.5) < medic.radius \
-                    and (self.world.walls[i].start_pos.x < x < self.world.walls[i].end_pos.x
-                         or self.world.walls[i].start_pos.y < y < self.world.walls[i].end_pos.y):
+                    and (wall.start_pos.x < x < wall.end_pos.x
+                         or wall.start_pos.y < y < wall.end_pos.y):
                 result.append(i)
                 break
+            elif abs(((a * x) + (b * y) + c) / (a ** 2 + b ** 2) ** 0.5) < medic.radius:
+                if self.has_line_and_circle_meet_point(wall.start_pos.x, wall.start_pos.y,
+                                                       wall.end_pos.x, wall.end_pos.y, wall_line_eq,
+                                                       x, y, medic.radius):
+                    result.append(i)
+                    break
             else:
                 continue
 
@@ -511,7 +694,7 @@ class GameHandler(RealtimeGameHandler):
             theta2 = math.degrees(math.acos((vl[0] * v2[0] + vl[1] * v2[1]) / (size_vl * size_v2)))
             if abs(theta - theta1 - theta2) < 0.01:
                 a, b, c = self.walls_line_equation[i]
-                h = (a * x) + (b * y) + c
+                h = ((a * x) + (b * y) + c) / (a**2 + b**2)**0.5
                 if h != 0:
                     x2 = x + self.world_map["medics"]["laser_range"] * math.cos(math.radians(angle))
                     y2 = y - self.world_map["medics"]["laser_range"] * math.sin(math.radians(angle))
@@ -530,7 +713,7 @@ class GameHandler(RealtimeGameHandler):
                     a, b, c = line_eq
                     o_medic = self.world.medics[side][i]
                     r = o_medic.radius
-                    dist = o_medic.position.x * a + o_medic.position.y * b + c
+                    dist = (o_medic.position.x * a + o_medic.position.y * b + c) / (a**2 + b**2)**0.5
                     if dist <= o_medic.radius:
                         x_tmp, y_tmp, x1_tmp, y1_tmp, x2_tmp, y2_tmp, = [None for _ in range(6)]
                         if a == 0:
@@ -664,7 +847,14 @@ class GameHandler(RealtimeGameHandler):
 
         return x_dst, y_dst, res_medic
 
-
+    def _reload_laser_count(self):
+        for side in self.world.medics:
+            for medic in self.world.medics[side]:
+                medic.time_to_reload -= 1
+                if medic.time_to_reload == 0:
+                    medic.time_to_reload = medic.reload_time
+                    if medic.laser_count < medic.laser_max_count:
+                        medic.laser_count += 1
 
     def _get_fire_max_point(self, x1, y1, angle):
         x = x1 + math.cos(math.radians(angle)) * self.world_map["medics"]["laser_range"]
@@ -727,3 +917,133 @@ class GameHandler(RealtimeGameHandler):
     @staticmethod
     def get_2_points_distance(x1, y1, x2, y2):
         return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+    @staticmethod
+    def has_line_and_circle_meet_point(x_src, y_src, x_dst, y_dst, line_eq, x, y, r):
+        a, b, c = line_eq
+        dist = (x * a + y * b + c) / (a**2 + b**2)**0.5
+        if dist <= r:
+            x_tmp, y_tmp, x1_tmp, y1_tmp, x2_tmp, y2_tmp, = [None for _ in range(6)]
+            if a == 0:
+                y_tmp = -c / b
+                delta = (-2 * x)**2 - 4 * (x ** 2 + (y_tmp - y)**2 - r **2)
+                if delta > 0:
+                    x1_tmp = ((2 * x) + delta**0.5) / 2.0
+                    x2_tmp = ((2 * x) - delta**0.5) / 2.0
+                elif delta == 0:
+                    x_tmp = x
+                else:
+                    return False
+            elif b == 0:
+                x_tmp = -c / a
+                delta = (-2 * y)**2 - 4 * (y ** 2 + (x_tmp - x)**2 - r **2)
+                if delta > 0:
+                    y1_tmp = ((2 * y) + delta**0.5) / 2.0
+                    y2_tmp = ((2 * y) - delta**0.5) / 2.0
+                elif delta == 0:
+                    y_tmp = y
+                else:
+                    return False
+            else:
+                delta = (-2 * a**2 * y + 2 * a * b * x + 2 * b * c)**2 - 4 * (a**2 + b **2) * (a**2 * x**2 + a**2 * y**2 + 2 * a * c * x + c**2 - a**2 * r**2)
+                if delta > 0:
+                    y1_tmp = (-(-2 * a**2 * y + 2 * a * b * x + 2 * b * c) + delta**0.5) / (2 * (a**2 + b**2))
+                    y2_tmp = (-(-2 * a**2 * y + 2 * a * b * x + 2 * b * c) - delta**0.5) / (2 * (a**2 + b**2))
+                    x1_tmp = (-c - b * y1_tmp) / a
+                    x2_tmp = (-c - b * y2_tmp) / a
+                elif delta == 0:
+                    y_tmp = (-(-2 * a**2 * y + 2 * a * b * x + 2 * b * c)) / (2 * (a**2 + b**2))
+                    x_tmp = (-c - b * y_tmp) / a
+
+                else:
+                    return False
+            if x2_tmp is not None and y2_tmp is not None:
+                vl = (x_dst - x_src, y_dst - y_src)
+                vm1 = (x1_tmp - x_src, y1_tmp - y_src)
+                vm2 = (x2_tmp - x_src, y2_tmp - y_src)
+
+                if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d1 <= d2 and d1 <= d:
+                            return True
+                        elif d2 <= d1 and d2 < d:
+                            return True
+                    else:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        if d1 <= d:
+                            return True
+                else:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d2 <= d:
+                            return True
+            elif x2_tmp is not None and y_tmp is not None:
+                vl = (x_dst - x_src, y_dst - y_src)
+                vm1 = (x1_tmp - x_src, y_tmp - y_src)
+                vm2 = (x2_tmp - x_src, y_tmp - y_src)
+                if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d1 <= d2 and d1 <= d:
+                            return True
+                        elif d2 <= d1 and d2 < d:
+                            return True
+                    else:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        if d1 <= d:
+                            return True
+                else:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d2 <= d:
+                            return True
+
+            elif y2_tmp is not None and x_tmp is not None:
+                vl = (x_dst - x_src, y_dst - y_src)
+                vm1 = (x_tmp - x_src, y1_tmp - y_src)
+                vm2 = (x_tmp - x_src, y2_tmp - y_src)
+                if vl[0]*vm1[0] + vl[1]*vm1[1] > 0:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d1 <= d2 and d1 <= d:
+                            return True
+                        elif d2 <= d1 and d2 < d:
+                            return True
+                    else:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d1 = (vm1[0]**2 + vm1[1]**2)**0.5
+                        if d1 <= d:
+                            return True
+                else:
+                    if vl[0]*vm2[0] + vl[1]*vm2[1] > 0:
+                        d = (vl[0]**2 + vl[1]**2)**0.5
+                        d2 = (vm2[0]**2 + vm2[1]**2)**0.5
+                        if d2 <= d:
+                            return True
+            elif x_tmp is not None and y_tmp is not None:
+                vl = (x_dst - x_src, y_dst - y_src)
+                vm = (x_tmp - x_src, y_tmp - y_src)
+                if vl[0]*vm[0] + vl[1]*vm[1] > 0:
+                    d = (vl[0]**2 + vl[1]**2)**0.5
+                    d1 = (vm[0]**2 + vm[1]**2)**0.5
+                    if d1 <= d:
+                        return True
+        return False
+
+    @staticmethod
+    def confidence_of_map_bound():
+        return [[{"x": 0.01, "y": 0.01}, {"x": 19.99, "y": 0.01}],
+                [{"x": 0.01, "y": 0.01}, {"x": 0.01, "y": 19.99}],
+                [{"x": 19.99, "y": 0.01}, {"x": 19.99, "y": 19.99}],
+                [{"x": 0.01, "y": 19.99}, {"x": 19.99, "y": 19.99}]]

@@ -2,6 +2,8 @@
     "": "map size",
     "width": 20.0,
     "height": 20.0,
+    "monitor_width": 960,
+    "monitor_height": 960,
 
     "":"medics",
     "medics": {
@@ -14,9 +16,11 @@
         "max_fire_angle": 10,
         "max_move_distance": 0.99,
         "healing_remaining_time": 0,
-        "laser_max_count": 3,
+        "laser_max_count": 5,
         "laser_range": 3,
-        "laser_count": 1000,
+        "laser_count": 4,
+        "time_to_reload" : 10,
+        "reload_time" : 10,
         "laser_damage": 20
     },
 
@@ -28,9 +32,9 @@
     "":"patients",
     "patients": {
         "number": 5,
-        "healing_duration": 3,
+        "healing_duration": 1,
         "radius": 0.75,
-        "capturable": false,
+        "capturable": true,
         "heal_score": 10
     },
     "": "walls",
@@ -58,6 +62,17 @@
                                 {"x": 15.2, "y": 5.5},
                                 {"x": 5.8, "y": 16.5},
                                 {"x": 16.0, "y": 16.1}],
-                  "appearance_time": 30}
+                  "appearance_time": 30},
+
+    "": "position of medics",
+    "medics_position": {"Flip": [{"x": 2.0, "y": 2.0, "angle": 330},
+                                  {"x": 18.0, "y": 18.0, "angle": 120}],
+                        "Flop": [{"x": 18.0, "y": 2.0, "angle": 240},
+                                  {"x": 2.0, "y": 18.0, "angle": 45}]
+
+    },
+    "": "position of patients",
+    "patients_position": [{"x":18.0, "y": 12.0, "capable": false},
+                          {"x":6.0, "y": 5.0, "capable": true}]
 
 }
