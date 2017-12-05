@@ -375,9 +375,11 @@ class Fire : public KSObject
 protected:
 
 	int __id;
+	bool __clockwise;
 	float __angle;
 
 	bool __has_id;
+	bool __has_clockwise;
 	bool __has_angle;
 
 
@@ -386,6 +388,11 @@ public: // getters
 	inline int id() const
 	{
 		return __id;
+	}
+	
+	inline bool clockwise() const
+	{
+		return __clockwise;
 	}
 	
 	inline float angle() const
@@ -399,6 +406,11 @@ public: // reference getters
 	inline int &ref_id() const
 	{
 		return (int&) __id;
+	}
+	
+	inline bool &ref_clockwise() const
+	{
+		return (bool&) __clockwise;
 	}
 	
 	inline float &ref_angle() const
@@ -415,6 +427,12 @@ public: // setters
 		has_id(true);
 	}
 	
+	inline void clockwise(const bool &clockwise)
+	{
+		__clockwise = clockwise;
+		has_clockwise(true);
+	}
+	
 	inline void angle(const float &angle)
 	{
 		__angle = angle;
@@ -427,6 +445,11 @@ public: // has_attribute getters
 	inline bool has_id() const
 	{
 		return __has_id;
+	}
+	
+	inline bool has_clockwise() const
+	{
+		return __has_clockwise;
 	}
 	
 	inline bool has_angle() const
@@ -442,6 +465,11 @@ public: // has_attribute setters
 		__has_id = has_id;
 	}
 	
+	inline void has_clockwise(const bool &has_clockwise)
+	{
+		__has_clockwise = has_clockwise;
+	}
+	
 	inline void has_angle(const bool &has_angle)
 	{
 		__has_angle = has_angle;
@@ -453,6 +481,7 @@ public:
 	Fire()
 	{
 		has_id(false);
+		has_clockwise(false);
 		has_angle(false);
 	}
 	
@@ -479,13 +508,22 @@ public:
 			s += std::string(tmp17, sizeof(int));
 		}
 		
+		// serialize clockwise
+		s += __has_clockwise;
+		if (__has_clockwise)
+		{
+			bool tmp19 = __clockwise;
+			auto tmp20 = reinterpret_cast<char*>(&tmp19);
+			s += std::string(tmp20, sizeof(bool));
+		}
+		
 		// serialize angle
 		s += __has_angle;
 		if (__has_angle)
 		{
-			float tmp19 = __angle;
-			auto tmp20 = reinterpret_cast<char*>(&tmp19);
-			s += std::string(tmp20, sizeof(float));
+			float tmp22 = __angle;
+			auto tmp23 = reinterpret_cast<char*>(&tmp22);
+			s += std::string(tmp23, sizeof(float));
 		}
 		
 		return s;
@@ -500,6 +538,15 @@ public:
 		{
 			__id = *((int*) (&s[offset]));
 			offset += sizeof(int);
+		}
+		
+		// deserialize clockwise
+		__has_clockwise = *((unsigned char*) (&s[offset]));
+		offset += sizeof(unsigned char);
+		if (__has_clockwise)
+		{
+			__clockwise = *((bool*) (&s[offset]));
+			offset += sizeof(bool);
 		}
 		
 		// deserialize angle
