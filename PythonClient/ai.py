@@ -24,10 +24,10 @@ class AI(RealtimeAI):
             a = [
                 Turn(medic.id, random.choice([True, False]), random.uniform(0, 30)),
                 Move(medic.id, 0.6),
-                Fire(medic.id, 10)
+                Fire(medic.id, False, 10)
             ]
-            if medic.id == 1000:
-                self.send_command(Fire(medic.id, 0))
+            if medic.id == 1000 or medic.id == 999:
+                self.send_command(Fire(medic.id, False, 0))
             elif medic.id == 1001:
                 continue
             elif medic.id == 10001:

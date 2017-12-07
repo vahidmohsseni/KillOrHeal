@@ -5,6 +5,9 @@
     "monitor_width": 960,
     "monitor_height": 960,
 
+    "": "game config",
+    "max_cycle": 50,
+
     "":"medics",
     "medics": {
         "number": 3,
@@ -32,7 +35,7 @@
     "":"patients",
     "patients": {
         "number": 5,
-        "healing_duration": 1,
+        "healing_duration": 3,
         "radius": 0.75,
         "capturable": true,
         "heal_score": 10

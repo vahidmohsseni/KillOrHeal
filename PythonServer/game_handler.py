@@ -36,7 +36,11 @@ class GameHandler(RealtimeGameHandler):
         world_map_file.close()
         # set world height and width
         self.world.height, self.world.width = (world_map["height"], world_map["width"])
-        create_random = 0
+
+        # set max cycle to world for endgame
+        self._max_cycle = world_map["max_cycle"]
+
+        create_random = 1
         if create_random:
             # add medics and patients to world
             self.world.medics = {self.sides[0]: [], self.sides[1]: []}
@@ -71,6 +75,11 @@ class GameHandler(RealtimeGameHandler):
             medic = self.create_medics(10002, self.sides[0], Position(16.7, 7.1), 234, world_map)
             self.world.medics[medic.side_name].append(medic)
 
+            medic = self.create_medics(999, self.sides[1], Position(2.5, 3.5), 270, world_map)
+            self.world.medics[medic.side_name].append(medic)
+            medic = self.create_medics(999, self.sides[0], Position(2.5, 5.5), 90, world_map)
+            self.world.medics[medic.side_name].append(medic)
+
             for i in range(world_map["patients"]["number"]):
                 p = Position(self.get_random_float(world_map["patients"]["radius"],
                                                    self.world.width - 2 * world_map["patients"]["radius"]),
@@ -96,16 +105,19 @@ class GameHandler(RealtimeGameHandler):
                 self.world.medics[self.sides[1]].append(medic)
                 counter2 += 1
             for patient in world_map["patients_position"]:
-                print patient
                 p = Position(patient["x"], patient["y"])
                 capturable = patient["capable"]
                 self.world.patients.append(self.create_patients(p, world_map, capturable))
 
-        # set world scores
+        # set world scores and number of kills and heals
         self.world.scores = {}
+        self.no_kills = {}
+        self.no_heals = {}
         for side in self.sides:
             self.world.scores[side] = 0
-        # end set world scores
+            self.no_kills[side] = 0
+            self.no_heals[side] = 0
+        # end set world scores and number of kills and heals
 
         # set walls into world
         self.walls_line_equation = []  # ax + by + c = 0
@@ -145,13 +157,17 @@ class GameHandler(RealtimeGameHandler):
 
     def on_initialize_gui(self):
         print('initialize gui')
+        print self.config
         self.gui_config = gui_config = self.config["gui"]
         # set coefficient of gui height and width
-        # from chillin_server.gui.canvas import Canvas
-        # self.canvas = Canvas()
         width_coefficient = self.world_map["monitor_width"] / self.world.width
         height_coefficient = self.world_map["monitor_height"] / self.world.height
 
+        self.canvas.create_image("Background", 0, 0, scale_type=ScaleType.ScaleX,
+                                 scale_value=int(self.canvas.width * 100.0 / self.config["gui"]["background_size"][0]),
+                                 custom_ref="bckgrnd")
+        self.canvas.edit_image("bckgrnd", scale_type=ScaleType.ScaleY,
+                               scale_value=int(self.canvas.height * 100.0 / self.config["gui"]["background_size"][1]))
         self.medics_ref = {}
         self.medics_info_ref = {}
         for side in self.world.medics:
@@ -220,10 +236,11 @@ class GameHandler(RealtimeGameHandler):
             self.canvas.create_line(x1, y1, x2, y2, wall_color)
 
         # set cycle counter on gui
-        x = 970
-        y = 30
+        x = 1130
+        y = 36
         color = self.canvas.make_rgba(0, 40, 10, 255)
-        self.cycle_ref = self.canvas.create_text("Cycle: " + str(self.current_cycle), x, y, color, 30)
+        self.cycle_ref = self.canvas.create_text("Cycle:  " + str(self.current_cycle), x, y, color, 32,
+                                                 center_origin=True)
 
         # set score board on gui
         sides_color = {self.sides[0]: self.canvas.make_rgba(213, 211, 3, 255),
@@ -233,9 +250,17 @@ class GameHandler(RealtimeGameHandler):
                                  scale_value=80, angle=270, center_origin=True)
         self.canvas.create_image(self.sides[1], 1220, 200, scale_type=ScaleType.ScaleToWidth,
                                  scale_value=80, angle=270, center_origin=True)
-        self.scores_ref = self.canvas.create_text(str(self.world.scores[self.sides[0]]) + " :score: " +
+        self.scores_ref = self.canvas.create_text(str(self.world.scores[self.sides[0]]) + "   :score:   " +
                                                   str(self.world.scores[self.sides[1]]),
-                                                  1130, 280, color, 40, center_origin=True)
+                                                  1130, 285, color, 40, center_origin=True)
+
+        self.kills_ref = self.canvas.create_text(str(self.no_kills[self.sides[0]]) + "  :kills:  " +
+                                                 str(self.no_kills[self.sides[1]]),
+                                                 1130, 330, color, 40, center_origin=True)
+        self.heals_ref = self.canvas.create_text(str(self.no_heals[self.sides[0]]) + "  :heals:  " +
+                                                 str(self.no_heals[self.sides[1]]),
+                                                 1130, 375, color, 40, center_origin=True)
+
 
         self.power_ups_ref = {}  # key = (x, y)
         self.modifying_power_ups = []  # [bool create or delete, id]
@@ -274,6 +299,43 @@ class GameHandler(RealtimeGameHandler):
         self._reload_laser_count()
         # empty commands dict
         self.commands = {}
+
+        if self.current_cycle >= self._max_cycle:
+            end_game_status = self.win_or_draw()
+            details = {"scores": {self.sides[0]: str(self.world.scores[self.sides[0]]),
+                                  self.sides[1]: str(self.world.scores[self.sides[1]])},
+
+                       "kills ": {self.sides[0]: str(self.no_kills[self.sides[0]]),
+                                  self.sides[1]: str(self.no_kills[self.sides[1]])},
+
+                       "heals ": {self.sides[0]: str(self.no_heals[self.sides[0]]),
+                                  self.sides[1]: str(self.no_heals[self.sides[1]])}}
+
+            if end_game_status[0] == 1:  # draw
+                self.end_game(details=details)
+            else:
+                self.end_game(end_game_status[1], details=details)
+
+        else:
+            end_game_status = False
+            details = {"scores": {self.sides[0]: str(self.world.scores[self.sides[0]]),
+                                  self.sides[1]: str(self.world.scores[self.sides[1]])},
+
+                       "kills ": {self.sides[0]: str(self.no_kills[self.sides[0]]),
+                                  self.sides[1]: str(self.no_kills[self.sides[1]])},
+
+                       "heals ": {self.sides[0]: str(self.no_heals[self.sides[0]]),
+                                  self.sides[1]: str(self.no_heals[self.sides[1]])}}
+            for side in self.world.medics:
+                if len(self.world.medics[side]) == 0:
+                    end_game_status = self.win_or_draw()
+                    break
+
+            if end_game_status:
+                if end_game_status[0] == 1:  # draw
+                    self.end_game(details=details)
+                else:
+                    self.end_game(end_game_status[1], details=details)
 
     def on_update_clients(self):
         print('update clients')
@@ -341,11 +403,9 @@ class GameHandler(RealtimeGameHandler):
 
         # update patients if remove and create new medics if needed
         for item in self.modifying_patients_and_medics:
-            try:
+            if item[0] < len(self.patients_ref):
                 self.canvas.delete_element(self.patients_ref[item[0]])
                 self.patients_ref.remove(self.patients_ref[item[0]])
-            except:
-                pass
             if item[1] != -1:
                 medic = item[1]
                 x = int(medic.position.x * width_coefficient)
@@ -417,17 +477,21 @@ class GameHandler(RealtimeGameHandler):
             x2 = int(i[2] * width_coefficient)
             y2 = int(i[3] * height_coefficient)
             wall_color = self.canvas.make_rgba(203, 96, 1, 255)
-            ref = self.canvas.create_line(x1, y1, x2, y2, wall_color, 2)
+            ref = self.canvas.create_line(x1, y1, x2, y2, wall_color, 3)
             self.delete_fire_ref.append(ref)
         self.create_fire_ref = []
         # end draw fire and remove
 
         # update cycle
-        self.canvas.edit_text(self.cycle_ref, "Cycle: " + str(self.current_cycle))
+        self.canvas.edit_text(self.cycle_ref, "Cycle:   " + str(self.current_cycle))
 
         # update score board
-        self.canvas.edit_text(self.scores_ref, str(self.world.scores[self.sides[0]]) + " :score: " +
+        self.canvas.edit_text(self.scores_ref, str(self.world.scores[self.sides[0]]) + "  :score:  " +
                               str(self.world.scores[self.sides[1]]))
+        self.canvas.edit_text(self.kills_ref, str(self.no_kills[self.sides[0]]) + "  :kills:  " +
+                              str(self.no_kills[self.sides[1]]))
+        self.canvas.edit_text(self.heals_ref, str(self.no_heals[self.sides[0]]) + "  :heals:  " +
+                              str(self.no_heals[self.sides[1]]))
 
         self.canvas.apply_actions()
 
@@ -502,11 +566,13 @@ class GameHandler(RealtimeGameHandler):
                                                             , self.world_map)
                             self.world.medics[side].append(medic_temp)
                             self.world.scores[side] += patient.heal_score
+                            self.no_heals[side] += 1
                             self.world.patients.remove(patient)
                             self.modifying_patients_and_medics.append((i, medic_temp))
 
                         else:
                             self.world.scores[side] += patient.heal_score
+                            self.no_heals[side] += 1
                             self.world.patients.remove(patient)
                             self.modifying_patients_and_medics.append((i, -1))
 
@@ -591,8 +657,13 @@ class GameHandler(RealtimeGameHandler):
 
     def _handle_fire(self, side, medic, cmd):
         angle = cmd.angle
+        clock_wise = cmd.clockwise
         if abs(angle) <= self.world_map["medics"]["max_fire_angle"]:
-            angle += medic.angle
+            if clock_wise:
+                angle -= medic.angle
+            else:
+                angle += medic.angle
+            angle %= 360
             if medic.laser_count != 0:
                 medic.healing_remaining_time = 0
                 medic.laser_count -= 1
@@ -607,6 +678,7 @@ class GameHandler(RealtimeGameHandler):
                         self.down_medics.append(o_medic)
                         self.down_medics_ref.append(o_medic)
                         self.world.scores[side] += o_medic.death_score
+                        self.no_kills[side] += 1
 
                 self.create_fire_ref.append([x2, y2, x1, y1])
 
@@ -846,6 +918,29 @@ class GameHandler(RealtimeGameHandler):
                                     res_medic = o_medic
 
         return x_dst, y_dst, res_medic
+
+    def win_or_draw(self):
+        """
+        if the game has winner the first value of returning tuple is 0, and second value of tuple is winner and third is loser
+        if the game is draw the first value of returning tuple is 1, and second and third value of tuple is just team names
+        """
+        no_medics_1 = len(self.world.medics[self.sides[0]])
+        no_medics_2 = len(self.world.medics[self.sides[1]])
+        if no_medics_1 != no_medics_2:
+            if no_medics_1 == 0:
+                return 0, self.sides[1], self.sides[0]
+            if no_medics_2 == 0:
+                return 0, self.sides[0], self.sides[1]
+
+        score_1 = self.world.scores[self.sides[0]]
+        score_2 = self.world.scores[self.sides[1]]
+
+        if score_1 == score_2:
+            return 1, self.sides[0], self.sides[1]
+        elif score_1 > score_2:
+            return 0, self.sides[0], self.sides[1]
+        else:
+            return 0, self.sides[1], self.sides[0]
 
     def _reload_laser_count(self):
         for side in self.world.medics:

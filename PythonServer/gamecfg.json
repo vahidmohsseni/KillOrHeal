@@ -24,16 +24,17 @@
 		"save_replay": true,
 		"replay_dir": "replays",
 		"replay_filename": null,
-		"width": 1660,
+		"width": 1360,
 		"height": 960,
 		"status_offset": 960,
 		"images": {
-			"Flip": "images/kia/team1_angry.png",
-          	"Flop": "images/kia/team2_angry.png",
-			"CapturablePatient": "images/kia/patient.png",
-			"Patient": "images/kia/patient2.png",
-			"Laser": "images/kia/gun.png",
-			"Healpack": "images/kia/banana.png"
+			"Background": "images/white.png",
+			"Flip": "images/team1_angry.png",
+          	"Flop": "images/team2_angry.png",
+			"CapturablePatient": "images/patient1.png",
+			"Patient": "images/patient2.png",
+			"Laser": "images/gun.png",
+			"Healpack": "images/banana.png"
 		}
 	},
 
@@ -54,7 +55,7 @@
 		"": "my configs",
 		"map": "maps/simple.cm",
 		"gui": {
-			"background_size": [300, 300]
+			"background_size": [1660.0, 960.0]
 		}
 	}
 }
