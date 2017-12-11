@@ -40,7 +40,7 @@ class GameHandler(RealtimeGameHandler):
         # set max cycle to world for endgame
         self._max_cycle = world_map["max_cycle"]
 
-        create_random = 1
+        create_random = 0
         if create_random:
             # add medics and patients to world
             self.world.medics = {self.sides[0]: [], self.sides[1]: []}
@@ -157,7 +157,6 @@ class GameHandler(RealtimeGameHandler):
 
     def on_initialize_gui(self):
         print('initialize gui')
-        print self.config
         self.gui_config = gui_config = self.config["gui"]
         # set coefficient of gui height and width
         width_coefficient = self.world_map["monitor_width"] / self.world.width
@@ -350,11 +349,11 @@ class GameHandler(RealtimeGameHandler):
             for medic in self.world.medics[side]:
                 x = int(medic.position.x * width_coefficient)
                 y = int(medic.position.y * height_coefficient)
-                tmp = self.medics_ref.get((side, medic.id), -1)
-                tmp2 = self.medics_info_ref.get((side, medic.id), -1)
-                if tmp >= 0:
+                tmp = self.medics_ref.get((side, medic.id), None)
+                tmp2 = self.medics_info_ref.get((side, medic.id), None)
+                if tmp is not None:
                     self.canvas.edit_image(self.medics_ref[side, medic.id], x, y, angle=medic.angle)
-                    if tmp2 >= 0:
+                    if tmp2 is not None:
                         id_ref, health_ref, laser_ref, reload_ref = self.medics_info_ref[(side, medic.id)]
                         x += 12
                         y += -45
@@ -382,11 +381,11 @@ class GameHandler(RealtimeGameHandler):
 
         # delete medics whose health is 0
         for medic in self.down_medics_ref:
-            ref = self.medics_ref.get((medic.side_name, medic.id), -1)
-            info_refs = self.medics_info_ref.get((medic.side_name, medic.id), -1)
-            if ref >= 0:
+            ref = self.medics_ref.get((medic.side_name, medic.id), None)
+            info_refs = self.medics_info_ref.get((medic.side_name, medic.id), None)
+            if ref is not None:
                 self.canvas.delete_element(ref)
-                if info_refs:
+                if info_refs is not None:
                     for i in info_refs:
                         self.canvas.delete_element(i)
                 x = int(medic.position.x * width_coefficient)
@@ -752,9 +751,6 @@ class GameHandler(RealtimeGameHandler):
         fire_line_eq = ((y - y_max), (x_max - x), ((y * (x - x_max)) + (x * (y_max - y))))
         for i in range(len(self.world.walls)):
             wall = self.world.walls[i]
-            angle1 = self.get_line_degree_with_2_points(x, y, wall.start_pos.x, wall.start_pos.y)
-            angle2 = self.get_line_degree_with_2_points(x, y, wall.end_pos.x, wall.end_pos.y)
-            # if angle1 < angle < angle2 or angle1 > angle > angle2:
             v1 = (wall.start_pos.x - x, wall.start_pos.y - y)
             size_v1 = (v1[0] ** 2 + v1[1]**2)**0.5
             v2 = (wall.end_pos.x - x, wall.end_pos.y - y)
