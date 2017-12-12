@@ -29,10 +29,10 @@
 		"status_offset": 960,
 		"images": {
 			"Background": "images/white.png",
-			"DixieKong": "images/team1_angry.png",
-			"DiddyKong": "images/team2_angry.png",
-			"CapturablePatient": "images/patient1.png",
-			"Patient": "images/patient2.png",
+			"DiddyKong": "images/team1_angry.png",
+			"DixieKong": "images/team2_angry.png",
+			"Patient": "images/patient1.png",
+			"CapturablePatient": "images/patient2.png",
 			"Laser": "images/gun.png",
 			"Healpack": "images/banana.png"
 		}
@@ -45,7 +45,6 @@
 
 	"game_handler": {
 		"": "base game handler configs",
-		"start_time": "2017-11-08 00:50",
 		"start_waiting_time": 3,
 		"": "realtime game handler configs",
 		"cycle_duration": 0.25,

@@ -26,9 +26,23 @@ class AI(RealtimeAI):
         # print('decide')
         for medic in self.world.medics[self.my_side]:
             # here is stupid medic`s code!!!
-            a = [
-                Turn(medic.id, random.choice([True, False]), random.uniform(0, 30)),
-                Move(medic.id, 0.6),
-                Fire(medic.id, False, 10),
+            random_args = [
+                (medic.id, random.uniform(0, medic.max_move_distance)),
+                (medic.id, random.choice([True, False]), random.uniform(0, medic.max_turn_angle)),
+                (medic.id, random.choice([True, False]), random.uniform(0, medic.max_turn_angle))
             ]
-            self.send_command(random.choice(a[0:3]))
+            commands = [self.move, self.turn, self.fire]
+            random_command = random.randint(0, 2)
+            commands[random_command](*random_args[random_command])
+
+
+    def move(self, medic_id, distance):
+        self.send_command(Move(medic_id, distance))
+
+
+    def turn(self, medic_id, clockwise, angle):
+        self.send_command(Turn(medic_id, clockwise, angle))
+
+
+    def fire(self, medic_id, clockwise, angle):
+        self.send_command(Fire(medic_id, clockwise, angle))

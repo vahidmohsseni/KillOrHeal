@@ -2,16 +2,16 @@
 
 # python imports
 import random
+import json
+import math
+
 # chillin imports
 from chillin_server import RealtimeGameHandler
 from chillin_server.gui.canvas_elements import ScaleType
+
 # project imports
 from ks.models import World, Medic, Patient, Position, Wall, PowerUp, PowerUpType
 from ks.commands import Move, Turn, Fire
-# json for map
-import json
-# math for draw walls
-import math
 
 
 class GameHandler(RealtimeGameHandler):
@@ -235,16 +235,18 @@ class GameHandler(RealtimeGameHandler):
                                  scale_value=80, angle=270, center_origin=True)
         self.canvas.create_image(self.sides[1], 1220, 200, scale_type=ScaleType.ScaleToWidth,
                                  scale_value=80, angle=270, center_origin=True)
+
+        self.canvas.create_text(self.sides[0] + " Vs. " + self.sides[1], 1130, 285, color, 29, center_origin=True)
         self.scores_ref = self.canvas.create_text(str(self.world.scores[self.sides[0]]) + "   :score:   " +
                                                   str(self.world.scores[self.sides[1]]),
-                                                  1130, 285, color, 40, center_origin=True)
+                                                  1130, 330, color, 40, center_origin=True)
 
         self.kills_ref = self.canvas.create_text(str(self.no_kills[self.sides[0]]) + "  :kills:  " +
                                                  str(self.no_kills[self.sides[1]]),
-                                                 1130, 330, color, 40, center_origin=True)
+                                                 1130, 375, color, 40, center_origin=True)
         self.heals_ref = self.canvas.create_text(str(self.no_heals[self.sides[0]]) + "  :heals:  " +
                                                  str(self.no_heals[self.sides[1]]),
-                                                 1130, 375, color, 40, center_origin=True)
+                                                 1130, 410, color, 40, center_origin=True)
 
 
         self.power_ups_ref = {}  # key = (x, y)
@@ -276,6 +278,9 @@ class GameHandler(RealtimeGameHandler):
             for medic in self.world.medics[side]:
                 if medic.id == command.id:
                     self._handle_command(side, medic, command)
+
+        for side in self.world.medics:
+            for medic in self.world.medics[side]:
                 self._healing(side, medic)
                 self._crush_powerup_and_medic(medic)
 
@@ -512,7 +517,7 @@ class GameHandler(RealtimeGameHandler):
                            world_map["patients"]["radius"],
                            world_map["patients"]["healing_duration"],
                            capturable,
-                           world_map["patients"]["heal_score"])
+                           world_map["patients"]["heal_score_capturable" if capturable else "heal_score"])
         return Patient(position,
                        world_map["patients"]["radius"],
                        world_map["patients"]["healing_duration"],
@@ -533,7 +538,6 @@ class GameHandler(RealtimeGameHandler):
             patient = self.world.patients[i]
             patient_medic_dist = self.get_2_points_distance(medic.position.x, medic.position.y,
                                                             patient.position.x, patient.position.y)
-
             if patient_medic_dist <= patient.radius + medic.radius:
                 if medic.healing_remaining_time == 0:
                     medic.healing_remaining_time = patient.healing_duration
@@ -562,12 +566,13 @@ class GameHandler(RealtimeGameHandler):
                             self.modifying_patients_and_medics.append((i, -1))
 
                         break  # not to check other patients
+                    break # not to check other patients
             else:
                 continue
 
     def _handle_move(self, side, medic, cmd):
         dist = cmd.distance
-        if dist < 1.0:
+        if dist < medic.max_move_distance:
             medic.healing_remaining_time = 0
             x = medic.position.x + dist * math.cos(math.radians(medic.angle))
             y = medic.position.y - dist * math.sin(math.radians(medic.angle))
@@ -586,9 +591,7 @@ class GameHandler(RealtimeGameHandler):
         for i in range(len(self.world.walls)):
             wall_line_eq = self.walls_line_equation[i]
             wall = self.world.walls[i]
-            a = wall_line_eq[0]
-            b = wall_line_eq[1]
-            c = wall_line_eq[2]
+            a, b, c = wall_line_eq
             if abs(((a * x) + (b * y) + c) / (a**2 + b**2)**0.5) < 0.001:
                 a1 = -b
                 b1 = a
@@ -641,13 +644,14 @@ class GameHandler(RealtimeGameHandler):
                 medic.angle %= 360
 
     def _handle_fire(self, side, medic, cmd):
-        angle = cmd.angle
+        fire_angle = cmd.angle
         clock_wise = cmd.clockwise
-        if abs(angle) <= self.world_map["medics"]["max_fire_angle"]:
+        angle = medic.angle
+        if abs(fire_angle) <= self.world_map["medics"]["max_fire_angle"]:
             if clock_wise:
-                angle -= medic.angle
+                angle -= fire_angle
             else:
-                angle += medic.angle
+                angle += fire_angle
             angle %= 360
             if medic.laser_count != 0:
                 medic.healing_remaining_time = 0
