@@ -6,11 +6,12 @@
     "monitor_height": 960,
 
     "": "game config",
-    "max_cycle": 50,
+    "max_cycle": 250,
+    "random_flag" : 1,
 
     "":"medics",
     "medics": {
-        "number": 3,
+        "number": 12,
         "death_score": 20,
         "radius": 0.5,
         "health": 100,
@@ -34,7 +35,7 @@
 
     "":"patients",
     "patients": {
-        "number": 5,
+        "number": 12,
         "healing_duration": 3,
         "radius": 0.75,
         "capturable": true,
@@ -68,9 +69,9 @@
                   "appearance_time": 30},
 
     "": "position of medics",
-    "medics_position": {"Flip": [{"x": 2.0, "y": 2.0, "angle": 330},
+    "medics_position": {"DixieKong": [{"x": 2.0, "y": 2.0, "angle": 330},
                                   {"x": 18.0, "y": 18.0, "angle": 120}],
-                        "Flop": [{"x": 18.0, "y": 2.0, "angle": 240},
+                        "DiddyKong": [{"x": 18.0, "y": 2.0, "angle": 240},
                                   {"x": 2.0, "y": 18.0, "angle": 45}]
 
     },

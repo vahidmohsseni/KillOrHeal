@@ -40,7 +40,7 @@ class GameHandler(RealtimeGameHandler):
         # set max cycle to world for endgame
         self._max_cycle = world_map["max_cycle"]
 
-        create_random = 0
+        create_random = world_map["random_flag"]
         if create_random:
             # add medics and patients to world
             self.world.medics = {self.sides[0]: [], self.sides[1]: []}
@@ -65,20 +65,6 @@ class GameHandler(RealtimeGameHandler):
                 medic = self.create_medics(i + world_map["medics"]["number"], self.sides[1], p2, angle2, world_map)
                 # medic.max_move_distance = self.calc_medic_max_move(medic)
                 self.world.medics[self.sides[1]].append(medic)
-            medic = self.create_medics(1000, self.sides[1], Position(14.0, 5.7), 345, world_map)
-            self.world.medics[self.sides[1]].append(medic)
-            medic = self.create_medics(1001, self.sides[0], Position(16.4, 6.3), 120, world_map)
-            self.world.medics[self.sides[0]].append(medic)
-
-            medic = self.create_medics(10002, self.sides[1], Position(2.5, 17.5), 123, world_map)
-            self.world.medics[medic.side_name].append(medic)
-            medic = self.create_medics(10002, self.sides[0], Position(16.7, 7.1), 234, world_map)
-            self.world.medics[medic.side_name].append(medic)
-
-            medic = self.create_medics(999, self.sides[1], Position(2.5, 3.5), 270, world_map)
-            self.world.medics[medic.side_name].append(medic)
-            medic = self.create_medics(999, self.sides[0], Position(2.5, 5.5), 90, world_map)
-            self.world.medics[medic.side_name].append(medic)
 
             for i in range(world_map["patients"]["number"]):
                 p = Position(self.get_random_float(world_map["patients"]["radius"],
@@ -521,7 +507,7 @@ class GameHandler(RealtimeGameHandler):
 
     @staticmethod
     def create_patients(position, world_map, capturable=None):
-        if capturable:
+        if capturable is not None:
             return Patient(position,
                            world_map["patients"]["radius"],
                            world_map["patients"]["healing_duration"],
