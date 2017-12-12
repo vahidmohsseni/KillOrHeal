@@ -16,6 +16,7 @@ private:
 public:
     AI(ks::models::World *world);
 
+    void initialize();
     void decide();
 
 protected:

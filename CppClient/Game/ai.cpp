@@ -15,6 +15,10 @@ AI::AI(World *world): RealtimeAI<World*>(world)
     srand(time(0));
 }
 
+void AI::initialize()
+{
+}
+
 void AI::decide()
 {
     for (int i = 0; i < this->world->ref_medics()[this->mySide].size(); i++)
