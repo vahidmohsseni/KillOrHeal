@@ -19,27 +19,31 @@ void AI::decide()
 {
     for (int i = 0; i < this->world->ref_medics()[this->mySide].size(); i++)
     {
+        Medic medic = this->world->ref_medics()[this->mySide][i];
         int rand = getRandInt(0, 2);
+
         if (rand == 0)
         {
-            Turn cmd;
-            cmd.id(this->world->ref_medics()[this->mySide][i].id());
-            cmd.clockwise((bool) getRandInt(0, 1));
-            cmd.angle(((float) getRandInt(0, 360)) / 360.0f);
-            this->sendCommand(&cmd);
+            this->move(
+                medic.id(),
+                getRandFloat(0, medic.max_move_distance())
+            );
         }
         else if (rand == 1)
         {
-            Move cmd;
-            cmd.id(this->world->ref_medics()[this->mySide][i].id());
-            cmd.distance(0.6f);
-            this->sendCommand(&cmd);
+            this->turn(
+                medic.id(),
+                (bool) getRandInt(0, 1),
+                getRandFloat(0, medic.max_turn_angle())
+            );
         }
         else
         {
-            Fire cmd;
-            cmd.id(this->world->ref_medics()[this->mySide][i].id());
-            this->sendCommand(&cmd);
+            this->fire(
+                medic.id(),
+                (bool) getRandInt(0, 1),
+                getRandFloat(0, medic.max_fire_angle())
+            );
         }
     }
 }
@@ -47,4 +51,37 @@ void AI::decide()
 int AI::getRandInt(int start, int end)
 {
     return (rand() % (end - start + 1)) + start;
+}
+
+float AI::getRandFloat(float start, float end)
+{
+    float n = ((float) rand()) / ((float) RAND_MAX);
+    return n * (end - start) + start;
+}
+
+
+void AI::move(int medicId, float distance)
+{
+    Move cmd;
+    cmd.id(medicId);
+    cmd.distance(distance);
+    this->sendCommand(&cmd);
+}
+
+void AI::turn(int medicId, bool clockwise, float angle)
+{
+    Turn cmd;
+    cmd.id(medicId);
+    cmd.clockwise(clockwise);
+    cmd.angle(angle);
+    this->sendCommand(&cmd);
+}
+
+void AI::fire(int medicId, bool clockwise, float angle)
+{
+    Fire cmd;
+    cmd.id(medicId);
+    cmd.clockwise(clockwise);
+    cmd.angle(angle);
+    this->sendCommand(&cmd);
 }
