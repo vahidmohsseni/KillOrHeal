@@ -30,7 +30,7 @@
 		"images": {
 			"Background": "images/white.png",
 			"DixieKong": "images/team1_angry.png",
-          	"DiddyKong": "images/team2_angry.png",
+			"DiddyKong": "images/team2_angry.png",
 			"CapturablePatient": "images/patient1.png",
 			"Patient": "images/patient2.png",
 			"Laser": "images/gun.png",
