@@ -17,9 +17,10 @@ class AI(RealtimeAI):
     def __init__(self, world):
         super(AI, self).__init__(world)
 
+
     def initialize(self):
-        # print team name
-        print(self.my_side)
+        pass
+
 
     def decide(self):
         # print('decide')
