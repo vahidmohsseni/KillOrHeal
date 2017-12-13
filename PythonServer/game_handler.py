@@ -162,7 +162,7 @@ class GameHandler(RealtimeGameHandler):
                 y = int(medic.position.y * height_coefficient)
                 # print medic.position.x, medic.position.y
                 rx = int(2 * medic.radius * width_coefficient)
-                ry = int(medic.radius * height_coefficient)
+                ry = int(2 * medic.radius * height_coefficient)
                 # print "medics", x, y, rx, ry
                 self.medics_ref[(side, medic.id)] = ref = self.canvas.create_image(self.sides[index], x, y,
                                                                                    scale_type=ScaleType.ScaleToWidth,
@@ -200,8 +200,8 @@ class GameHandler(RealtimeGameHandler):
         for patient in self.world.patients:
             x = int(patient.position.x * width_coefficient)
             y = int(patient.position.y * height_coefficient)
-            rx = int(patient.radius * width_coefficient)
-            ry = int(patient.radius * height_coefficient)
+            rx = int(2 * patient.radius * width_coefficient)
+            ry = int(2 * patient.radius * height_coefficient)
             # print "patient", x, y, rx, ry
             if patient.capturable:
                 self.patients_ref.append(self.canvas.create_image("CapturablePatient", x, y, scale_type=ScaleType.ScaleToWidth,
@@ -246,7 +246,7 @@ class GameHandler(RealtimeGameHandler):
                                                  1130, 375, color, 40, center_origin=True)
         self.heals_ref = self.canvas.create_text(str(self.no_heals[self.sides[0]]) + "  :heals:  " +
                                                  str(self.no_heals[self.sides[1]]),
-                                                 1130, 410, color, 40, center_origin=True)
+                                                 1130, 415, color, 40, center_origin=True)
 
 
         self.power_ups_ref = {}  # key = (x, y)
@@ -490,7 +490,7 @@ class GameHandler(RealtimeGameHandler):
         return random.uniform(start, end)
 
     @staticmethod
-    def create_medics(mid, side_name, position, angle, world_map):
+    def create_medics(mid, side_name, position, angle, world_map, laser_count=None):
         return Medic(mid,
                      side_name,
                      position,
@@ -501,7 +501,7 @@ class GameHandler(RealtimeGameHandler):
                      world_map["medics"]["max_fire_angle"],
                      world_map["medics"]['health'],
                      world_map["medics"]['max_health'],
-                     world_map["medics"]["laser_count"],
+                     world_map["medics"]["laser_count"] if laser_count is None else 0,
                      world_map["medics"]["laser_damage"],
                      world_map["medics"]["laser_range"],
                      world_map["medics"]["laser_max_count"],
@@ -673,7 +673,7 @@ class GameHandler(RealtimeGameHandler):
 
     def _create_power_ups_randomly(self):
         chance = random.randint(0, 100)
-        if chance > 70 and len(self.power_ups) >= 2:
+        if chance <= self.world_map["powerups"]["chance"] and len(self.power_ups) >= 2:
             chance = random.randint(0, len(self.power_ups) - 1)
             if self.power_ups[chance][1] == 0:
                 self.power_ups[chance][1] = 1
@@ -931,11 +931,12 @@ class GameHandler(RealtimeGameHandler):
     def _reload_laser_count(self):
         for side in self.world.medics:
             for medic in self.world.medics[side]:
-                medic.time_to_reload -= 1
-                if medic.time_to_reload == 0:
-                    medic.time_to_reload = medic.reload_time
-                    if medic.laser_count < medic.laser_max_count:
-                        medic.laser_count += 1
+                if medic.laser_max_count != medic.laser_count:
+                    medic.time_to_reload -= 1
+                    if medic.time_to_reload == 0:
+                        medic.time_to_reload = medic.reload_time
+                        if medic.laser_count < medic.laser_max_count:
+                            medic.laser_count += 1
 
     def _get_fire_max_point(self, x1, y1, angle):
         x = x1 + math.cos(math.radians(angle)) * self.world_map["medics"]["laser_range"]

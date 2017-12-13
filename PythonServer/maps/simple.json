@@ -56,6 +56,7 @@
 
     "": "powerups positions and types",
     "powerups": {
+        "chance": 70,
         "positions": [
             {"x": 5.0, "y": 5.0},
             {"x": 15.0, "y": 5.0},

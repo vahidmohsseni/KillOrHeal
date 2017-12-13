@@ -29,7 +29,7 @@ class AI(RealtimeAI):
             rand_args = [
                 (medic.id, random.uniform(0, medic.max_move_distance)),
                 (medic.id, random.choice([True, False]), random.uniform(0, medic.max_turn_angle)),
-                (medic.id, random.choice([True, False]), random.uniform(0, medic.max_turn_angle))
+                (medic.id, random.choice([True, False]), random.uniform(0, medic.max_fire_angle))
             ]
             commands = [self.move, self.turn, self.fire]
             r = random.randint(0, 2)
