@@ -53,7 +53,7 @@
 		"max_team_commands": 100,
 		"max_agent_commands": 100,
 		"": "my configs",
-		"map": "maps/x.json",
+		"map": "maps/simple.json",
 		"gui": {
 			"background_size": [1660.0, 960.0]
 		}
