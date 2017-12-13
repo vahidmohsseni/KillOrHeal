@@ -11,8 +11,8 @@
 
     "":"medics",
     "medics": {
-        "number": 5,
-        "death_score": 15,
+        "number": 4,
+        "death_score": 30,
         "radius": 0.5,
         "health": 100,
         "max_health": 100,
@@ -21,8 +21,8 @@
         "max_move_distance": 0.99,
         "healing_remaining_time": 0,
         "laser_max_count": 5,
-        "laser_range": 4,
-        "laser_count": 2,
+        "laser_range": 3,
+        "laser_count": 0,
         "time_to_reload" : 10,
         "reload_time" : 10,
         "laser_damage": 20
@@ -35,11 +35,11 @@
 
     "":"patients",
     "patients": {
-        "number": 8,
+        "number": 4,
         "healing_duration": 5,
-        "radius": 0.5,
+        "radius": 0.25,
         "capturable": false,
-        "heal_score": 20,
+        "heal_score": 15,
         "heal_score_capturable": 10
     },
 
@@ -50,17 +50,27 @@
         [{"x": 0.0, "y": 0.0}, {"x": 0.0, "y": 20.0}],
         [{"x": 20.0, "y": 0.0}, {"x": 20.0, "y": 20.0}],
         [{"x": 0.0, "y": 20.0}, {"x": 20.0, "y": 20.0}],
-        [{"x": 10.0, "y": 5.0}, {"x": 10.0, "y": 15.0}],
-        [{"x": 5.0, "y": 10.0}, {"x": 15.0, "y": 10.0}]
+        [{"x": 4.5, "y": 0.0}, {"x": 4.5, "y": 2.0}],
+        [{"x": 4.5, "y": 2.0}, {"x": 15.5, "y": 2.0}],
+        [{"x": 18.0, "y": 4.5}, {"x": 18.0, "y": 15.5}],
+        [{"x": 18.0, "y": 15.5}, {"x": 20.0, "y": 15.5}],
+        [{"x": 15.5, "y": 18.0}, {"x": 15.5, "y": 20.0}],
+        [{"x": 15.5, "y": 18.0}, {"x": 4.5, "y": 18.0}],
+        [{"x": 2.0, "y": 4.5}, {"x": 0.0, "y": 4.5}],
+        [{"x": 2.0, "y": 4.5}, {"x": 2.0, "y": 15.5}]
     ],
 
     "": "powerups positions and types",
     "powerups": {
         "positions": [
-            {"x": 5.0, "y": 5.0},
-            {"x": 15.0, "y": 5.0},
-            {"x": 5.0, "y": 15.0},
-            {"x": 15.0, "y": 15.0}
+            {"x": 7.5, "y": 8.5},
+            {"x": 5.5, "y": 6.5},
+            {"x": 13.5, "y": 8.5},
+            {"x": 15.5, "y": 6.5},
+            {"x": 13.5, "y": 12.5},
+            {"x": 15.5, "y": 14.5},
+            {"x": 5.5, "y": 14.5},
+            {"x": 7.5, "y": 12.5}
         ],
         "appearance_time": 30
     },
@@ -68,24 +78,20 @@
     "": "position of medics",
     "medics_position": {
         "DixieKong": [
-            {"x": 9.0, "y": 9.0, "angle": 135},
-            {"x": 11.0, "y": 11.0, "angle": 315}
+            {"x": 10.5, "y": 9.5, "angle": 90},
+            {"x": 10.5, "y": 11.5, "angle": 270}
         ],
         "DiddyKong": [
-            {"x": 9.0, "y": 11.0, "angle": 225},
-            {"x": 11.0, "y": 9.0, "angle": 45}
+            {"x": 11.5, "y": 10.5, "angle": 0},
+            {"x": 9.5, "y": 10.5, "angle": 180}
         ]
     },
 
     "": "position of patients",
     "patients_position": [
-        {"x":10.0, "y": 2.0, "capable": false},
-        {"x":10.0, "y": 18.0, "capable": false},
-        {"x":2.0, "y": 10.0, "capable": false},
-        {"x":18.0, "y": 10.0, "capable": false},
-        {"x":2.0, "y": 2.0, "capable": false},
-        {"x":18.0, "y": 2.0, "capable": false},
-        {"x":2.0, "y": 18.0, "capable": false},
-        {"x":18.0, "y": 18.0, "capable": false}
+        {"x":5.0, "y": 1.0, "capable": false},
+        {"x":1.0, "y": 5.0, "capable": false},
+        {"x":15.0, "y": 19.0, "capable": false},
+        {"x":19.0, "y": 15.0, "capable": false}
     ]
 }
