@@ -49,7 +49,7 @@
 		"start_waiting_time": 3,
 		"": "realtime game handler configs",
 		"cycle_duration": 0.25,
-		"max_total_commands": 100,
+		"max_total_commands": 200,
 		"max_team_commands": 100,
 		"max_agent_commands": 100,
 		"": "my configs",
