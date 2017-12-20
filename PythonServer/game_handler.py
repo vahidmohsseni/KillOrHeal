@@ -329,7 +329,10 @@ class GameHandler(RealtimeGameHandler):
 
     def on_update_clients(self):
         print('update clients')
+        confident_walls = self.world.walls[-4:]
+        self.world.walls = self.world.walls[:-4]
         self.send_snapshot(self.world)
+        self.world.walls += confident_walls
 
     def on_update_gui(self):
         print('update gui')
