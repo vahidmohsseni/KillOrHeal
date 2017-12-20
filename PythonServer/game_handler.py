@@ -572,7 +572,10 @@ class GameHandler(RealtimeGameHandler):
 
     def _handle_move(self, side, medic, cmd):
         dist = cmd.distance
-        if dist < medic.max_move_distance:
+        if abs(dist) > medic.max_move_distance:
+            dist = medic.max_move_distance if dist > 0 else - medic.max_move_distance
+
+        if abs(dist) <= medic.max_move_distance:
             medic.healing_remaining_time = 0
             x = medic.position.x + dist * math.cos(math.radians(medic.angle))
             y = medic.position.y - dist * math.sin(math.radians(medic.angle))
@@ -634,6 +637,9 @@ class GameHandler(RealtimeGameHandler):
     def _handle_turn(self, side, medic, cmd):
         clockwise = cmd.clockwise
         angle = cmd.angle
+        if abs(angle) > self.world_map["medics"]["max_turn_angle"]:
+            angle = self.world_map["medics"]["max_turn_angle"] if angle > 0 else - self.world_map["medics"]["max_turn_angle"]
+
         if abs(angle) <= self.world_map["medics"]["max_turn_angle"]:
             medic.healing_remaining_time = 0
             if clockwise:
@@ -647,6 +653,9 @@ class GameHandler(RealtimeGameHandler):
         fire_angle = cmd.angle
         clock_wise = cmd.clockwise
         angle = medic.angle
+        if abs(fire_angle) > self.world_map["medics"]["max_fire_angle"]:
+            fire_angle = self.world_map["medics"]["max_fire_angle"] if fire_angle > 0 else - self.world_map["medics"]["max_fire_angle"]
+
         if abs(fire_angle) <= self.world_map["medics"]["max_fire_angle"]:
             if clock_wise:
                 angle -= fire_angle
