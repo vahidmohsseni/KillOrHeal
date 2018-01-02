@@ -384,7 +384,7 @@ class GameHandler(RealtimeGameHandler):
                         self.canvas.delete_element(i)
                 x = int(medic.position.x * width_coefficient)
                 y = int(medic.position.y * height_coefficient)
-                rx = int(self.world_map["patients"]["radius"] * width_coefficient)
+                rx = int(2 * self.world_map["patients"]["radius"] * width_coefficient)
                 ry = int(medic.radius * height_coefficient)
                 # print "patient", x, y, rx, ry
                 self.patients_ref.append(self.canvas.create_image("CapturablePatient", x, y,
